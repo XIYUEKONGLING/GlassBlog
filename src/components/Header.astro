@@ -1,5 +1,5 @@
 ---
-import HeaderLink from './HeaderLink.astro';
+import ButtonHeader from './ButtonHeader.astro';
 import { SITE_TITLE } from '../consts';
 ---
 
@@ -7,29 +7,33 @@ import { SITE_TITLE } from '../consts';
 	<nav
 		id="nav-container"
 		class="group pointer-events-auto mx-auto flex w-full max-w-[80%] flex-wrap items-center justify-between 
-               rounded-full bg-black/40 px-6 py-3 h-20
-               shadow-lg shadow-zinc-800/10 backdrop-blur-[20px]
+               rounded-full bg-black/40 px-4 py-3 h-20
+               shadow-lg shadow-zinc-900/20 backdrop-blur-[20px]
+               border border-white/5
                transition-all duration-300 ease-in-out
                backdrop-saturate-150
                
-               data-[state=open]:bg-black/80 data-[state=open]:rounded-2xl"
+               data-[state=open]:bg-black/90 data-[state=open]:rounded-2xl"
 	>
-		<div class="flex items-center px-5">
-			<h2 class="text-lg font-bold tracking-tight text-amber-50">
-				<a href="/" class="hover:text-blue-400 transition-colors decoration-transparent">
+		<!-- Logo Area -->
+		<div class="flex items-center px-4">
+			<h2 class="text-lg font-bold tracking-tight text-amber-50 drop-shadow-md">
+				<a href="/" class="hover:text-blue-300 transition-colors decoration-transparent">
 					{SITE_TITLE}
 				</a>
 			</h2>
 		</div>
 
-		<button id="menu-btn" class="block md:hidden text-amber-50 focus:outline-none transition-transform active:scale-90">
+		<!-- Mobile Menu Button -->
+		<button id="menu-btn" class="block md:hidden text-amber-50 px-4 focus:outline-none transition-transform active:scale-90">
 			<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
 		</button>
 
-		<div class="hidden md:flex gap-6 text-sm font-medium text-gray-200 px-5">
-			<HeaderLink href="/" class="hover:text-blue-400 transition-colors">Home</HeaderLink>
-			<HeaderLink href="/blog" class="hover:text-blue-400 transition-colors">Blog</HeaderLink>
-			<HeaderLink href="/about" class="hover:text-blue-400 transition-colors">About</HeaderLink>
+		<!-- Desktop Navigation (Acrylic Buttons) -->
+		<div class="hidden md:flex gap-2 px-2">
+			<ButtonHeader href="/">Home</ButtonHeader>
+			<ButtonHeader href="/blog">Blog</ButtonHeader>
+			<ButtonHeader href="/about">About</ButtonHeader>
 		</div>
 	</nav>
 </header>
