@@ -7,25 +7,32 @@ import { SITE_TITLE } from '../consts';
 	<nav
 		id="nav-container"
 		class="group pointer-events-auto mx-auto flex w-full max-w-[80%] flex-wrap items-center justify-between 
-               rounded-full bg-black/40 px-4 py-3 h-20
-               shadow-lg shadow-zinc-900/20 backdrop-blur-[20px]
-               border border-white/5
+               rounded-full px-4 py-3 h-20
+               shadow-lg backdrop-blur-[20px]
                transition-all duration-300 ease-in-out
                backdrop-saturate-150
                
-               data-[state=open]:bg-black/90 data-[state=open]:rounded-2xl"
+               /* Light Mode Styles (默认) */
+               bg-white/60 border-white/40 shadow-zinc-200/20
+               data-[state=open]:bg-white/90 data-[state=open]:rounded-2xl
+
+               /* Dark Mode Styles */
+               dark:bg-black/40 dark:border-white/5 dark:shadow-zinc-900/20
+               dark:data-[state=open]:bg-black/90"
 	>
 		<!-- Logo Area -->
 		<div class="flex items-center px-4">
-			<h2 class="text-lg font-bold tracking-tight text-amber-50 drop-shadow-md">
-				<a href="/" class="hover:text-blue-300 transition-colors decoration-transparent">
+			<h2 class="text-lg font-bold tracking-tight drop-shadow-sm transition-colors
+                       text-zinc-800 dark:text-amber-50">
+				<a href="/" class="hover:text-blue-600 dark:hover:text-blue-300 transition-colors decoration-transparent">
 					{SITE_TITLE}
 				</a>
 			</h2>
 		</div>
 
 		<!-- Mobile Menu Button -->
-		<button id="menu-btn" class="block md:hidden text-amber-50 px-4 focus:outline-none transition-transform active:scale-90">
+		<button id="menu-btn" class="block md:hidden px-4 focus:outline-none transition-transform active:scale-90
+                                     text-zinc-800 dark:text-amber-50">
 			<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
 		</button>
 
@@ -38,4 +45,11 @@ import { SITE_TITLE } from '../consts';
 	</nav>
 </header>
 <script>
+	const menuBtn = document.getElementById('menu-btn');
+	const navContainer = document.getElementById('nav-container');
+
+	menuBtn?.addEventListener('click', () => {
+		const currentState = navContainer?.getAttribute('data-state');
+		navContainer?.setAttribute('data-state', currentState === 'open' ? 'closed' : 'open');
+	});
 </script>

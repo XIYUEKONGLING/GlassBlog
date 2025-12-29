@@ -12,13 +12,29 @@ const isActive = href === pathname || href === '/' + (subpath?.[0] || '');
 <a
 	href={href}
 	class:list={[
-    "relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ease-out", 
-	"flex items-center justify-center",
-    "border border-transparent",
-    "hover:scale-105 hover:bg-white/10 hover:text-white hover:border-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]",
-    isActive
-			? "bg-white/15 text-white border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.15)] backdrop-blur-md"
-			: "text-zinc-400",
+		"relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ease-out",
+		"flex items-center justify-center",
+		"border border-transparent",
+		
+		"hover:scale-105 hover:shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]",
+		"hover:bg-black/5 dark:hover:bg-white/10",
+		"hover:text-zinc-900 dark:hover:text-white",
+		"hover:border-black/10 dark:hover:border-white/10",
+
+		isActive
+			? [
+				// Active (Light Mode)
+				"bg-white/40 text-zinc-900 border-white/40 shadow-[0_0_20px_rgba(0,0,0,0.05)]",
+				// Active (Dark Mode)
+				"dark:bg-white/15 dark:text-white dark:border-white/20 dark:shadow-[0_0_20px_rgba(255,255,255,0.15)]",
+				"backdrop-blur-md"
+			]
+			: [
+				// Inactive (Light Mode)
+				"text-zinc-600",
+				// Inactive (Dark Mode)
+				"dark:text-zinc-400"
+			],
 
 		className,
 	]}
