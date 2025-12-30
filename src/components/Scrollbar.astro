@@ -3,9 +3,24 @@
 ---
 
 <div id="custom-scrollbar" class="scrollbar-container">
+    <!-- Up Arrow -->
+    <button id="scroll-btn-up" class="scroll-btn" aria-label="Scroll Up">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 15l-6-6-6 6"/>
+        </svg>
+    </button>
+
+    <!-- Track -->
     <div id="scrollbar-track" class="scrollbar-track">
         <div id="scrollbar-thumb" class="scrollbar-thumb"></div>
     </div>
+
+    <!-- Down Arrow -->
+    <button id="scroll-btn-down" class="scroll-btn" aria-label="Scroll Down">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+        </svg>
+    </button>
 </div>
 
 <style>
@@ -13,25 +28,62 @@
         position: fixed;
         top: 0;
         right: 0;
-        width: 14px;
+        width: 16px; /* Slightly wider to accommodate buttons */
         height: 100vh;
         z-index: 9999;
-        pointer-events: none;
-        padding: 4px;
-    }
-
-    .scrollbar-track {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        border-radius: 8px;
+        pointer-events: none; /* Let clicks pass through when not interacting */
+        padding: 4px 2px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
         transition: opacity 0.3s ease;
         opacity: 0;
     }
 
-    .scrollbar-container:hover .scrollbar-track,
-    .scrollbar-track.active {
+    /* Show container on hover or when scrolling */
+    .scrollbar-container.visible,
+    .scrollbar-container:hover {
         opacity: 1;
+        pointer-events: auto;
+    }
+
+    .scroll-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 16px;
+        border-radius: 4px;
+        border: none;
+        background: rgba(0, 0, 0, 0.15);
+        color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0; /* Prevent buttons from shrinking */
+    }
+
+    .scroll-btn:hover {
+        background: rgba(0, 0, 0, 0.3);
+        color: rgba(0, 0, 0, 0.9);
+    }
+
+    .scroll-btn:active {
+        background: rgba(0, 0, 0, 0.5);
+        transform: scale(0.95);
+    }
+
+    .scrollbar-track {
+        position: relative;
+        flex-grow: 1; /* Take up remaining space */
+        width: 100%;
+        border-radius: 8px;
+        background: transparent;
+    }
+
+    /* Optional: Show track background only on hover */
+    .scrollbar-container:hover .scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
     }
 
     .scrollbar-thumb {
@@ -40,7 +92,7 @@
         left: 50%;
         transform: translateX(-50%);
         width: 6px;
-        border-radius: 3px;
+        border-radius: 4px;
 
         /* Glass morphism effect */
         background: rgba(0, 0, 0, 0.25);
@@ -48,49 +100,72 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
         transition: width 0.2s ease, background 0.2s ease;
-        pointer-events: auto;
         cursor: pointer;
     }
 
     .scrollbar-thumb:hover {
-        width: 8px;
-        background: rgba(0, 0, 0, 0.35);
-    }
-
-    .scrollbar-thumb:active {
         width: 10px;
         background: rgba(0, 0, 0, 0.45);
     }
 
+    .scrollbar-thumb.dragging {
+        width: 10px;
+        background: rgba(0, 0, 0, 0.6);
+    }
+
     /* Dark mode */
     @media (prefers-color-scheme: dark) {
+        .scroll-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .scroll-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .scrollbar-container:hover .scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
         .scrollbar-thumb {
             background: rgba(255, 255, 255, 0.25);
             box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
         }
 
         .scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.45);
         }
 
-        .scrollbar-thumb:active {
-            background: rgba(255, 255, 255, 0.45);
+        .scrollbar-thumb.dragging {
+            background: rgba(255, 255, 255, 0.6);
         }
     }
 </style>
 
 <script>
     class CustomScrollbar {
+        private container: HTMLElement;
         private thumb: HTMLElement;
         private track: HTMLElement;
+        private btnUp: HTMLElement;
+        private btnDown: HTMLElement;
+
         private isDragging: boolean = false;
         private startY: number = 0;
         private startScrollTop: number = 0;
         private hideTimeout?: number;
+        private scrollInterval?: number;
+
+        private readonly SCROLL_STEP = 40; // Pixels per step
+        private readonly SCROLL_SPEED = 50; // ms per step (continuous)
 
         constructor() {
+            this.container = document.getElementById('custom-scrollbar')!;
             this.thumb = document.getElementById('scrollbar-thumb')!;
             this.track = document.getElementById('scrollbar-track')!;
+            this.btnUp = document.getElementById('scroll-btn-up')!;
+            this.btnDown = document.getElementById('scroll-btn-down')!;
 
             this.init();
         }
@@ -108,7 +183,7 @@
             // Update on resize
             window.addEventListener('resize', () => this.updateThumb(), { passive: true });
 
-            // Update on content changes (for dynamic content)
+            // Update on content changes
             const observer = new MutationObserver(() => this.updateThumb());
             observer.observe(document.body, {
                 childList: true,
@@ -122,95 +197,141 @@
             const documentHeight = document.documentElement.scrollHeight;
             const scrollTop = window.scrollY;
 
-            // Calculate thumb height (proportional to visible area)
+            // If content fits in window, hide scrollbar entirely
+            if (documentHeight <= windowHeight) {
+                this.container.style.display = 'none';
+                return;
+            } else {
+                this.container.style.display = 'flex';
+            }
+
+            // Calculate track height (excluding buttons and padding)
+            const trackHeight = this.track.clientHeight;
+
+            // Calculate thumb height proportionally
+            // Minimum height of 30px for usability
             const thumbHeight = Math.max(
-                (windowHeight / documentHeight) * windowHeight,
-                40 // Minimum thumb height
+                (windowHeight / documentHeight) * trackHeight,
+                30
             );
 
             // Calculate thumb position
             const maxScroll = documentHeight - windowHeight;
             const scrollPercent = maxScroll > 0 ? scrollTop / maxScroll : 0;
-            const maxThumbTop = windowHeight - thumbHeight;
+            const maxThumbTop = trackHeight - thumbHeight;
             const thumbTop = scrollPercent * maxThumbTop;
 
             // Apply styles
             this.thumb.style.height = `${thumbHeight}px`;
-            this.thumb.style.top = `${thumbTop}px`;
-
-            // Hide scrollbar if content doesn't overflow
-            if (documentHeight <= windowHeight) {
-                this.track.style.display = 'none';
-            } else {
-                this.track.style.display = 'block';
-            }
+            this.thumb.style.transform = `translate(-50%, ${thumbTop}px)`; // Use transform for performance
+            this.thumb.style.top = '0'; // Reset top, rely on transform
         }
 
         private handleScroll(): void {
             this.updateThumb();
             this.showScrollbar();
 
-            // Auto-hide after scrolling stops
+            // Auto-hide
             if (this.hideTimeout) {
                 clearTimeout(this.hideTimeout);
             }
             this.hideTimeout = window.setTimeout(() => {
-                if (!this.isDragging) {
-                    this.track.classList.remove('active');
+                if (!this.isDragging && !this.container.matches(':hover')) {
+                    this.container.classList.remove('visible');
                 }
             }, 1000);
         }
 
         private showScrollbar(): void {
-            this.track.classList.add('active');
+            this.container.classList.add('visible');
         }
 
         private attachEvents(): void {
-            // Mouse events
+            // --- Dragging Logic ---
             this.thumb.addEventListener('mousedown', (e) => this.startDrag(e));
             document.addEventListener('mousemove', (e) => this.drag(e));
             document.addEventListener('mouseup', () => this.stopDrag());
 
-            // Touch events for mobile
+            // Touch support
             this.thumb.addEventListener('touchstart', (e) => this.startDrag(e.touches[0]), { passive: false });
             document.addEventListener('touchmove', (e) => this.drag(e.touches[0]), { passive: false });
             document.addEventListener('touchend', () => this.stopDrag());
 
-            // Click on track to jump
-            this.track.addEventListener('click', (e) => {
+            // --- Track Click (Jump) ---
+            this.track.addEventListener('mousedown', (e) => {
                 if (e.target === this.track) {
                     this.jumpTo(e);
                 }
             });
+
+            // --- Button Logic (Click & Hold) ---
+            this.setupButton(this.btnUp, -1);
+            this.setupButton(this.btnDown, 1);
+        }
+
+        private setupButton(btn: HTMLElement, direction: 1 | -1): void {
+            const scrollAction = () => {
+                window.scrollBy({ top: direction * this.SCROLL_STEP, behavior: 'auto' });
+            };
+
+            const startScrolling = (e: Event) => {
+                e.preventDefault(); // Prevent text selection
+                scrollAction(); // Immediate scroll
+                // Continuous scroll
+                this.scrollInterval = window.setInterval(scrollAction, this.SCROLL_SPEED);
+            };
+
+            const stopScrolling = () => {
+                if (this.scrollInterval) {
+                    clearInterval(this.scrollInterval);
+                    this.scrollInterval = undefined;
+                }
+            };
+
+            btn.addEventListener('mousedown', startScrolling);
+            btn.addEventListener('touchstart', startScrolling, { passive: false });
+
+            // Stop on mouseup, mouseleave, touchend
+            window.addEventListener('mouseup', stopScrolling);
+            btn.addEventListener('mouseleave', stopScrolling);
+            btn.addEventListener('touchend', stopScrolling);
         }
 
         private startDrag(e: MouseEvent | Touch): void {
             this.isDragging = true;
             this.startY = e.clientY;
             this.startScrollTop = window.scrollY;
+            this.thumb.classList.add('dragging');
             this.showScrollbar();
             document.body.style.userSelect = 'none';
         }
 
         private drag(e: MouseEvent | Touch): void {
             if (!this.isDragging) return;
+            e instanceof Event && e.preventDefault(); // Prevent default touch actions
 
             const deltaY = e.clientY - this.startY;
-            const windowHeight = window.innerHeight;
+            const trackHeight = this.track.clientHeight;
+            const thumbHeight = this.thumb.clientHeight;
+            const maxThumbMove = trackHeight - thumbHeight;
+
             const documentHeight = document.documentElement.scrollHeight;
+            const windowHeight = window.innerHeight;
             const maxScroll = documentHeight - windowHeight;
 
-            const scrollRatio = maxScroll / windowHeight;
+            // Calculate scroll ratio based on track space
+            const scrollRatio = maxScroll / maxThumbMove;
             const newScrollTop = this.startScrollTop + (deltaY * scrollRatio);
 
             window.scrollTo({
                 top: Math.max(0, Math.min(newScrollTop, maxScroll)),
-                behavior: 'auto'
+                behavior: 'auto' // Instant update for dragging
             });
         }
 
         private stopDrag(): void {
             this.isDragging = false;
+            this.thumb.classList.remove('dragging');
             document.body.style.userSelect = '';
         }
 
@@ -218,10 +339,16 @@
             const trackRect = this.track.getBoundingClientRect();
             const clickY = e.clientY - trackRect.top;
             const trackHeight = trackRect.height;
-            const scrollPercent = clickY / trackHeight;
 
-            const windowHeight = window.innerHeight;
+            // Center the thumb on the click point
+            const thumbHeight = this.thumb.clientHeight;
+            const adjustedClickY = clickY - (thumbHeight / 2);
+
+            const maxThumbTop = trackHeight - thumbHeight;
+            const scrollPercent = Math.max(0, Math.min(adjustedClickY / maxThumbTop, 1));
+
             const documentHeight = document.documentElement.scrollHeight;
+            const windowHeight = window.innerHeight;
             const maxScroll = documentHeight - windowHeight;
 
             window.scrollTo({
@@ -231,7 +358,7 @@
         }
     }
 
-    // Initialize when DOM is ready
+    // Initialize
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => new CustomScrollbar());
     } else {
