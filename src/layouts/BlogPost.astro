@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import Panel from "../components/Panel.astro";
-import Profile from "../components/Profile.astro";
+import Sidebar from "../components/Sidebar.astro"; // Import
 import TableOfContents from "../components/TableOfContents.astro";
 import { Image } from 'astro:assets';
 import { SITE_TITLE } from "../consts.ts";
@@ -15,7 +15,6 @@ type Props = CollectionEntry<'blog'>['data'] & {
 };
 
 const { title, description, pubDate, updatedDate, heroImage, headings = [], categories, tags } = Astro.props;
-
 const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 ---
 
@@ -31,17 +30,15 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 	<div class="mx-auto max-w-[95%] md:max-w-[80%]">
 		<div class="flex flex-col lg:flex-row gap-8">
 
-			<!-- Left Sidebar: Profile + Optional TOC -->
+			<!-- Left Sidebar: Profile + TOC + Categories/Tags -->
 			<aside class="lg:w-1/4">
-				<div class="sticky top-28 flex flex-col gap-6">
-					<Profile />
-
+				<Sidebar>
 					{showToc && (
-						<Panel class="p-4!">
+						<Panel class="p-5! max-h-[60vh] overflow-y-auto custom-scrollbar">
 							<TableOfContents headings={headings} />
 						</Panel>
 					)}
-				</div>
+				</Sidebar>
 			</aside>
 
 			<!-- Main Content -->
@@ -52,7 +49,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 						{heroImage ? (
 							<Image width={1020} height={510} src={heroImage} alt="" class="rounded-xl shadow-lg w-full object-cover max-h-125" />
 						) : (
-                            <div class="w-full h-8 bg-gradient-to-r from-zinc-100 to-zinc-50 dark:from-white/5 dark:to-white/0 rounded-t-xl mb-4"></div>
+							<div class="w-full h-8 bg-linear-to-r from-zinc-100 to-zinc-50 dark:from-white/5 dark:to-white/0 rounded-t-xl mb-4"></div>
 						)}
 					</div>
 
@@ -61,9 +58,9 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 						{categories && categories.length > 0 && (
 							<div class="flex justify-center gap-2 mb-4">
 								{categories.map(cat => (
-									<span class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 px-3 py-1 rounded-full">
-                                        {cat}
-                                    </span>
+									<a href={`/archive#category-${cat}`} class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 px-3 py-1 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
+										{cat}
+									</a>
 								))}
 							</div>
 						)}
@@ -96,7 +93,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 								<i class="fa-solid fa-tags text-zinc-400"></i>
 								<div class="flex flex-wrap gap-2">
 									{tags.map(tag => (
-										<a href={`/archive`} class="text-sm px-3 py-1 bg-zinc-100 dark:bg-white/5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+										<a href={`/archive#tag-${tag}`} class="text-sm px-3 py-1 bg-zinc-100 dark:bg-white/5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
 											#{tag}
 										</a>
 									))}
