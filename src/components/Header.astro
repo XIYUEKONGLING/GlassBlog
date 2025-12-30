@@ -6,50 +6,97 @@ import { SITE_TITLE } from '../consts';
 <header class="sticky top-6 z-50 w-full px-4 pointer-events-none">
 	<nav
 		id="nav-container"
-		class="group pointer-events-auto mx-auto flex w-full max-w-[80%] flex-wrap items-center justify-between 
-               rounded-full px-4 py-3 h-20
-               shadow-lg backdrop-blur-[20px]
-               transition-all duration-300 ease-in-out
-               backdrop-saturate-150
+		class="group pointer-events-auto mx-auto flex flex-col 
+               w-[95%] md:w-full md:max-w-[80%]
+               rounded-full
+               px-6 py-3
+               shadow-lg 
+               backdrop-blur-[20px] backdrop-saturate-150
+               transition-all duration-500 ease-out
+               overflow-hidden
                
-               /* Light Mode Styles (默认) */
-               bg-white/60 border-white/40 shadow-zinc-200/20
-               data-[state=open]:bg-white/90 data-[state=open]:rounded-2xl
-
-               /* Dark Mode Styles */
-               dark:bg-black/40 dark:border-white/5 dark:shadow-zinc-900/20
-               dark:data-[state=open]:bg-black/90"
+               bg-white/60 border border-white/40 shadow-zinc-200/20
+               dark:bg-black/40 dark:border-white/10 dark:shadow-zinc-900/20
+               
+               h-18
+               data-[state=open]:h-auto"
 	>
-		<!-- Logo Area -->
-		<div class="flex items-center px-4">
+		<!-- Top Row: Logo & Menu Button -->
+		<div class="flex items-center justify-between w-full h-12 shrink-0">
+			<!-- Logo -->
 			<h2 class="text-lg font-bold tracking-tight drop-shadow-sm transition-colors
-                       text-zinc-800 dark:text-amber-50">
-				<a href="/" class="hover:text-blue-600 dark:hover:text-blue-300 transition-colors decoration-transparent">
+                       text-zinc-800 dark:text-zinc-100">
+				<a href="/" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
 					{SITE_TITLE}
 				</a>
 			</h2>
+
+			<!-- Desktop Navigation -->
+			<div class="hidden md:flex gap-2">
+				<ButtonHeader href="/">Home</ButtonHeader>
+				<ButtonHeader href="/blog">Blog</ButtonHeader>
+				<ButtonHeader href="/about">About</ButtonHeader>
+			</div>
+
+			<!-- Mobile Menu Button -->
+			<button
+				id="menu-btn"
+				class="block md:hidden p-2 -mr-2 rounded-full 
+                       focus:outline-none transition-all duration-200
+                       text-zinc-800 hover:bg-black/5 active:scale-95
+                       dark:text-zinc-100 dark:hover:bg-white/10"
+				aria-label="Toggle Menu"
+			>
+				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+				</svg>
+			</button>
 		</div>
 
-		<!-- Mobile Menu Button -->
-		<button id="menu-btn" class="block md:hidden px-4 focus:outline-none transition-transform active:scale-90
-                                     text-zinc-800 dark:text-amber-50">
-			<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-		</button>
-
-		<!-- Desktop Navigation (Acrylic Buttons) -->
-		<div class="hidden md:flex gap-2 px-2">
-			<ButtonHeader href="/">Home</ButtonHeader>
-			<ButtonHeader href="/blog">Blog</ButtonHeader>
-			<ButtonHeader href="/about">About</ButtonHeader>
+		<!-- Mobile Navigation Menu (Hidden by default, shown when open) -->
+		<div
+			class="md:hidden flex flex-col gap-2 pt-4 pb-2
+                   opacity-0 pointer-events-none
+                   transition-opacity duration-300
+                   data-[visible=true]:opacity-100 data-[visible=true]:pointer-events-auto"
+			id="mobile-menu"
+		>
+			<ButtonHeader href="/" class="w-full text-center justify-center">Home</ButtonHeader>
+			<ButtonHeader href="/blog" class="w-full text-center justify-center">Blog</ButtonHeader>
+			<ButtonHeader href="/about" class="w-full text-center justify-center">About</ButtonHeader>
 		</div>
 	</nav>
 </header>
+
 <script>
 	const menuBtn = document.getElementById('menu-btn');
 	const navContainer = document.getElementById('nav-container');
+	const mobileMenu = document.getElementById('mobile-menu');
 
-	menuBtn?.addEventListener('click', () => {
-		const currentState = navContainer?.getAttribute('data-state');
-		navContainer?.setAttribute('data-state', currentState === 'open' ? 'closed' : 'open');
+	menuBtn?.addEventListener('click', (e) => {
+		e.stopPropagation();
+		const isOpen = navContainer?.getAttribute('data-state') === 'open';
+
+		if (isOpen) {
+			navContainer?.setAttribute('data-state', 'closed');
+			mobileMenu?.setAttribute('data-visible', 'false');
+		} else {
+			navContainer?.setAttribute('data-state', 'open');
+			mobileMenu?.setAttribute('data-visible', 'true');
+		}
+	});
+
+	// Close menu when clicking outside
+	document.addEventListener('click', (e) => {
+		if (navContainer && !navContainer.contains(e.target as Node)) {
+			navContainer.setAttribute('data-state', 'closed');
+			mobileMenu?.setAttribute('data-visible', 'false');
+		}
+	});
+
+	// Close menu when navigating
+	document.addEventListener('astro:page-load', () => {
+		navContainer?.setAttribute('data-state', 'closed');
+		mobileMenu?.setAttribute('data-visible', 'false');
 	});
 </script>
