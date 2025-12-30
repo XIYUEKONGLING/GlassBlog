@@ -22,7 +22,7 @@ const { class: className, ...props } = Astro.props;
     className,
 ]}>
     {/* Avatar */}
-    <div class="relative mb-4 group cursor-pointer">
+    <div class="relative mb-5 group cursor-pointer">
         <Image
                 src={ANOTHER_AVATAR}
                 alt={ANOTHER_NAME}
@@ -41,16 +41,16 @@ const { class: className, ...props } = Astro.props;
     </div>
 
     {/* Text Info */}
-    <div class="text-center w-full space-y-4">
+    <div class="text-center w-full space-y-5">
 
         {/* Header: Name, ID, Pronouns */}
-        <div>
+        <div class="space-y-1">
             <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
                 {ANOTHER_NAME}
             </h2>
-            <div class="flex items-center justify-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <div class="flex items-center justify-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
                 {ANOTHER_IDENTITY && (
-                        <span class="font-medium">{ANOTHER_IDENTITY}</span>
+                        <span class="font-medium tracking-wide">{ANOTHER_IDENTITY}</span>
                 )}
 
                 {ANOTHER_IDENTITY && ANOTHER_PRONOUNS && (
@@ -66,29 +66,40 @@ const { class: className, ...props } = Astro.props;
         {/* Divider */}
         <div class="w-full h-px bg-zinc-200 dark:bg-white/10"></div>
 
-        {/* Meta Info: Location & Time */}
-        <div class="grid gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-            {ANOTHER_LOCATION && (
-                    <div class="flex items-center justify-center gap-2" title="Location">
-                        <i class="fa-solid fa-location-dot w-4 text-center opacity-70"></i>
-                        <span>{ANOTHER_LOCATION}</span>
-                    </div>
-            )}
+        {/* Meta Info: Location & Time (Grid Layout for Perfect Alignment) */}
+        {(ANOTHER_LOCATION || ANOTHER_TIMEZONE) && (
+                <div class="w-fit mx-auto grid grid-cols-[24px_1fr] gap-x-2 gap-y-2 text-sm text-zinc-600 dark:text-zinc-400 text-left">
 
-            {ANOTHER_TIMEZONE && (
-                    <div class="flex items-center justify-center gap-2" title={`Timezone: ${ANOTHER_TIMEZONE}`}>
-                        <i class="fa-solid fa-clock w-4 text-center opacity-70"></i>
-                        <span id="local-time" data-timezone={ANOTHER_TIMEZONE}>
-                        --:--
-                    </span>
-                    </div>
-            )}
-        </div>
+                    {/* Location Row */}
+                    {ANOTHER_LOCATION && (
+                            <>
+                                <div class="flex items-center justify-center">
+                                    <i class="fa-solid fa-location-dot opacity-70"></i>
+                                </div>
+                                <div class="truncate">
+                                    {ANOTHER_LOCATION}
+                                </div>
+                            </>
+                    )}
+
+                    {/* Time Row */}
+                    {ANOTHER_TIMEZONE && (
+                            <>
+                                <div class="flex items-center justify-center">
+                                    <i class="fa-solid fa-clock opacity-70"></i>
+                                </div>
+                                <div id="local-time" data-timezone={ANOTHER_TIMEZONE} class="tabular-nums">
+                                    --:-- <span class="text-xs opacity-60 ml-1">UTC--:--</span>
+                                </div>
+                            </>
+                    )}
+                </div>
+        )}
 
         {/* Description */}
         { ANOTHER_DESCRIPTION && (
-                <div class="pt-2">
-                    <p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed text-justify px-2">
+                <div class="pt-2 border-t border-transparent">
+                    <p class="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed text-center max-w-[90%] mx-auto">
                         {ANOTHER_DESCRIPTION}
                     </p>
                 </div>
@@ -106,21 +117,27 @@ const { class: className, ...props } = Astro.props;
 
         try {
             const now = new Date();
-            const options: Intl.DateTimeFormatOptions = {
+            const formatter = new Intl.DateTimeFormat('en-US', {
                 timeZone: timezone,
                 hour: '2-digit',
                 minute: '2-digit',
-                // second: '2-digit',
-                hour12: false
-            };
+                hour12: false,
+                timeZoneName: 'longOffset'
+            });
 
-            const timeString = new Intl.DateTimeFormat('en-US', options).format(now);
+            const parts = formatter.formatToParts(now);
+            const hour = parts.find(p => p.type === 'hour')?.value;
+            const minute = parts.find(p => p.type === 'minute')?.value;
+            const timeZoneName = parts.find(p => p.type === 'timeZoneName')?.value; // "GMT+08:00"
 
-            timeElement.textContent = `${timeString} (Local)`;
+            if (hour && minute && timeZoneName) {
+                const utcOffset = timeZoneName.replace('GMT', 'UTC');
+                timeElement.innerHTML = `${hour}:${minute} <span class="text-xs opacity-60 ml-1">${utcOffset}</span>`;
+            }
 
         } catch (e) {
             console.error("Invalid Timezone:", timezone);
-            timeElement.textContent = "Timezone Error";
+            timeElement.textContent = "Time Error";
         }
     }
 
