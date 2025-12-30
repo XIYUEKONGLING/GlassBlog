@@ -3,67 +3,283 @@ import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 import Panel from "../../components/Panel.astro";
+import FormattedDate from '../../components/FormattedDate.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+const categories = [...new Set(posts.flatMap((post) => post.data.categories || []))].sort();
+const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))].sort();
 ---
 
 <!doctype html>
 <html lang="en">
 <head>
-	<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	<BaseHead title={"Blog - " + SITE_TITLE} description={SITE_DESCRIPTION} />
 </head>
-<body>
+<body class="flex flex-col min-h-screen">
 <Header />
-<div class="w-full px-4 mt-16">
-	<Panel class="mx-auto max-w-[95%] md:max-w-[80%]">
-		<main class="w-full">
-			<section>
-				<ul class="grid grid-cols-1 md:grid-cols-2 gap-8 list-none p-0 m-0">
-					{
-						posts.map((post, index) => (
-							<li class={index === 0 ? "md:col-span-2 mb-4 text-center" : ""}>
-								<a
-									href={`/blog/${post.id}/`}
-									class="group block transition-all duration-200 hover:scale-[1.01]"
+<div class="w-full px-4 mt-16 grow">
+	<div class="mx-auto max-w-[95%] md:max-w-[80%]">
+		<div class="flex flex-col lg:flex-row gap-8">
+
+			<!-- Left Sidebar: Search & Filters -->
+			<aside class="lg:w-1/4">
+				<div class="sticky top-28 flex flex-col gap-6">
+
+					<!-- Search Panel -->
+					<Panel class="p-6!">
+						<h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+							<i class="fa-solid fa-magnifying-glass text-zinc-400"></i>
+							Search
+						</h3>
+						<div class="relative">
+							<label for="search-input"></label><input
+								type="text"
+								id="search-input"
+								placeholder="Search titles, tags..."
+								class="w-full bg-black/5 dark:bg-white/10 border border-transparent focus:border-blue-500 rounded-xl px-4 py-2 outline-none transition-all placeholder:text-zinc-400 text-sm"
+							/>
+						</div>
+					</Panel>
+
+					<!-- Categories Panel -->
+					{categories.length > 0 && (
+						<Panel class="p-6!">
+							<h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+								<i class="fa-solid fa-folder-open text-zinc-400"></i>
+								Categories
+							</h3>
+							<ul class="flex flex-col gap-1 text-sm">
+								{categories.map(category => (
+									<li>
+										<button
+											class="filter-btn w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex justify-between items-center group text-zinc-600 dark:text-zinc-400"
+											data-filter-type="category"
+											data-filter-value={category}
+										>
+											<span>{category}</span>
+											<span class="text-xs bg-zinc-200 dark:bg-white/10 px-2 py-0.5 rounded-full opacity-70 group-hover:opacity-100">
+                                                {posts.filter(p => p.data.categories?.includes(category)).length}
+                                            </span>
+										</button>
+									</li>
+								))}
+							</ul>
+						</Panel>
+					)}
+
+					<!-- Tags Panel -->
+					{tags.length > 0 && (
+						<Panel class="p-6!">
+							<h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+								<i class="fa-solid fa-tags text-zinc-400"></i>
+								Tags
+							</h3>
+							<div class="flex flex-wrap gap-2 text-sm">
+								{tags.map(tag => (
+									<button
+										class="filter-btn px-3 py-1 bg-black/5 dark:bg-white/10 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:text-blue-600 dark:hover:text-blue-300 transition-colors text-zinc-600 dark:text-zinc-400"
+										data-filter-type="tag"
+										data-filter-value={tag}
+									>
+										#{tag}
+									</button>
+								))}
+							</div>
+						</Panel>
+					)}
+				</div>
+			</aside>
+
+			<!-- Right Content: Post List -->
+			<main class="lg:w-3/4">
+				<Panel>
+					<div class="flex flex-col gap-8" id="post-list">
+						<!-- Active Filter Indicator (Hidden by default) -->
+						<div id="active-filter-bar" class="hidden items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                            <span class="text-sm text-blue-800 dark:text-blue-200">
+                                Filtering by: <span id="filter-label" class="font-bold"></span>
+                            </span>
+							<button id="clear-filter" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+								Clear Filter
+							</button>
+						</div>
+
+						{
+							posts.map((post) => (
+								<article
+									class="post-item group flex flex-col md:flex-row gap-6 border-b border-zinc-200/50 dark:border-white/5 pb-8 last:border-0 last:pb-0"
+									data-title={post.data.title.toLowerCase()}
+									data-desc={post.data.description.toLowerCase()}
+									data-categories={post.data.categories?.join(',') || ''}
+									data-tags={post.data.tags?.join(',') || ''}
 								>
-									{post.data.heroImage && (
-										<Image
-											width={720}
-											height={360}
-											src={post.data.heroImage}
-											alt=""
-											class:list={[
-												"mb-4 rounded-4xl shadow-sm transition-shadow duration-300",
-												"group-hover:shadow-xl dark:shadow-black/30",
-												index === 0 ? "w-full" : "w-full"
-											]}
-										/>
-									)}
-									<h4 class:list={[
-										"m-0 leading-tight font-bold transition-colors duration-200",
-										"text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400",
-										index === 0 ? "text-4xl" : "text-2xl"
-									]}>
-										{post.data.title}
-									</h4>
-									<p class="m-0 mt-2 text-zinc-500 dark:text-zinc-400 group-hover:text-blue-600/70 dark:group-hover:text-blue-400/70 transition-colors">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		</main>
-	</Panel>
+									{/* Thumbnail */}
+									<a href={`/blog/${post.id}/`} class="w-full md:w-1/3 shrink-0 overflow-hidden rounded-2xl relative">
+										{post.data.heroImage ? (
+											<Image
+												width={720}
+												height={360}
+												src={post.data.heroImage}
+												alt=""
+												class="w-full h-48 md:h-full object-cover transition-transform duration-500 group-hover:scale-110"
+											/>
+										) : (
+											<div class="w-full h-48 md:h-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center text-zinc-300 dark:text-zinc-600">
+												<i class="fa-regular fa-image text-4xl"></i>
+											</div>
+										)}
+
+										{/* Category Badge (Top Left of Image) */}
+										{post.data.categories && post.data.categories.length > 0 && (
+											<div class="absolute top-3 left-3 flex flex-wrap gap-1">
+												{post.data.categories.slice(0, 1).map(cat => (
+													<span class="px-2 py-1 text-xs font-bold bg-white/90 dark:bg-black/80 backdrop-blur-md rounded-md shadow-sm text-zinc-800 dark:text-zinc-200">
+                                                        {cat}
+                                                    </span>
+												))}
+											</div>
+										)}
+									</a>
+
+									{/* Content */}
+									<div class="flex flex-col justify-center">
+										<div class="text-sm text-zinc-500 dark:text-zinc-400 mb-2 flex flex-wrap items-center gap-3">
+											<span class="flex items-center gap-1">
+                                                <i class="fa-regular fa-calendar text-xs opacity-70"></i>
+                                                <FormattedDate date={post.data.pubDate} />
+                                            </span>
+
+											{/* Tags Inline */}
+											{post.data.tags && post.data.tags.length > 0 && (
+												<div class="flex items-center gap-2 text-xs">
+													<span class="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+													{post.data.tags.map(tag => (
+														<span class="text-zinc-400 dark:text-zinc-500">#{tag}</span>
+													))}
+												</div>
+											)}
+										</div>
+										<a href={`/blog/${post.id}/`}>
+											<h2 class="text-2xl font-bold mb-3 text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+												{post.data.title}
+											</h2>
+										</a>
+										<p class="text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-2">
+											{post.data.description}
+										</p>
+									</div>
+								</article>
+							))
+						}
+						<div id="no-results" class="hidden text-center py-12 text-zinc-500">
+							<i class="fa-solid fa-ghost text-4xl mb-4 opacity-50"></i>
+							<p>No articles found matching your criteria.</p>
+						</div>
+					</div>
+				</Panel>
+			</main>
+		</div>
+	</div>
 </div>
 <Footer />
+
+<!-- Client Side Logic: Search + Filters -->
+<script>
+	const searchInput = document.getElementById('search-input') as HTMLInputElement;
+	const posts = document.querySelectorAll('.post-item');
+	const noResults = document.getElementById('no-results');
+	const filterBtns = document.querySelectorAll('.filter-btn');
+	const activeFilterBar = document.getElementById('active-filter-bar');
+	const filterLabel = document.getElementById('filter-label');
+	const clearFilterBtn = document.getElementById('clear-filter');
+
+	let currentFilterType: string | null = null;
+	let currentFilterValue: string | null = null;
+
+	function filterPosts() {
+		const searchTerm = searchInput.value.toLowerCase();
+		let hasResults = false;
+
+		posts.forEach((post) => {
+			const el = post as HTMLElement;
+			const title = el.dataset.title || '';
+			const desc = el.dataset.desc || '';
+			const categories = (el.dataset.categories || '').split(',');
+			const tags = (el.dataset.tags || '').split(',');
+
+			// 1. Text Search Check
+			const matchesSearch = title.includes(searchTerm) || desc.includes(searchTerm);
+
+			// 2. Button Filter Check
+			let matchesFilter = true;
+			if (currentFilterType === 'category' && currentFilterValue) {
+				matchesFilter = categories.includes(currentFilterValue);
+			} else if (currentFilterType === 'tag' && currentFilterValue) {
+				matchesFilter = tags.includes(currentFilterValue);
+			}
+
+			// Final Decision
+			if (matchesSearch && matchesFilter) {
+				el.style.display = 'flex';
+				hasResults = true;
+			} else {
+				el.style.display = 'none';
+			}
+		});
+
+		if (noResults) {
+			noResults.style.display = hasResults ? 'none' : 'block';
+		}
+
+		// Update UI for Active Filter
+		if (activeFilterBar && filterLabel) {
+			if (currentFilterValue) {
+				activeFilterBar.classList.remove('hidden');
+				activeFilterBar.classList.add('flex');
+				const icon = currentFilterType === 'category' ? '<i class="fa-solid fa-folder-open mr-1"></i>' : '<i class="fa-solid fa-tag mr-1"></i>';
+				filterLabel.innerHTML = `${icon} ${currentFilterValue}`;
+			} else {
+				activeFilterBar.classList.add('hidden');
+				activeFilterBar.classList.remove('flex');
+			}
+		}
+	}
+
+	// Event Listeners
+	searchInput?.addEventListener('input', filterPosts);
+
+	filterBtns.forEach(btn => {
+		btn.addEventListener('click', () => {
+			const type = btn.getAttribute('data-filter-type');
+			const value = btn.getAttribute('data-filter-value');
+
+			// Toggle logic: click same filter to clear
+			if (currentFilterType === type && currentFilterValue === value) {
+				currentFilterType = null;
+				currentFilterValue = null;
+			} else {
+				currentFilterType = type;
+				currentFilterValue = value;
+			}
+
+			filterPosts();
+			// Scroll to top of list for better UX
+			document.getElementById('post-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		});
+	});
+
+	clearFilterBtn?.addEventListener('click', () => {
+		currentFilterType = null;
+		currentFilterValue = null;
+		searchInput.value = ''; // Optional: clear search text too?
+		filterPosts();
+	});
+</script>
 </body>
 </html>
