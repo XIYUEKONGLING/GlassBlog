@@ -6,12 +6,12 @@ import { SITE_AUTHOR, SITE_LICENSE, SITE_LICENSE_URL } from '../consts';
 const today = new Date();
 ---
 
-<footer class="w-full py-8 text-sm relative z-10 mt-auto">
-    <!-- 
-        Using Panel Component for consistent border-radius and glass effect.
-        Matches the width of the Header and Main Content.
-    -->
-    <Panel class="mx-auto max-w-[95%] md:max-w-[80%] flex flex-col gap-3 text-center py-6!">
+<!-- 
+    Added 'px-4' to match Header and Body wrapper padding.
+    This ensures the internal Panel (max-w-80%) aligns perfectly with the rest of the site.
+-->
+<footer class="w-full py-8 text-sm relative z-10 mt-auto px-4">
+    <Panel class="mx-auto max-w-[95%] md:max-w-[80%] flex flex-col gap-3 text-center !py-6">
 
         <!-- Copyright & Author -->
         <div class="text-zinc-800 dark:text-zinc-200 font-medium">
