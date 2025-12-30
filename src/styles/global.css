@@ -23,16 +23,27 @@
 	--gray: 96, 115, 159;
 	--gray-light: 229, 233, 240;
 	--gray-dark: 34, 41, 57;
-	
-    --bg-image: url("/images/marco-grosso-unsplash.jpg");
+
+	--bg-image: url("/images/marco-grosso-unsplash.jpg");
 
 	--glass-bg: rgba(255, 255, 255, 0.65);
 	--glass-border: rgba(255, 255, 255, 0.4);
 	--glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 	--glass-blur: blur(20px);
 	--box-shadow:
-			0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%), 0 16px 32px
-			rgba(var(--gray), 33%);
+			0 2px 6px rgba(var(--gray), 25%),
+			0 8px 24px rgba(var(--gray), 33%),
+			0 16px 32px rgba(var(--gray), 33%);
+}
+
+html {
+	overflow-y: scroll;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar {
+	display: none; /* Chrome, Safari, Opera */
 }
 
 body {
@@ -41,4 +52,6 @@ body {
 	background-position: center;
 	background-attachment: fixed;
 	min-height: 100vh;
+	margin: 0;
+	padding: 0;
 }
