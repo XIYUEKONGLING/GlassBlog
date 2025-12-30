@@ -5,14 +5,17 @@ import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import Panel from "../components/Panel.astro";
 import Profile from "../components/Profile.astro";
-import FormattedDate from '../components/FormattedDate.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const posts = (await getCollection('blog')).sort(
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 
-// Group by Year
+// 获取所有分类和标签用于筛选器
+const categories = [...new Set(posts.flatMap(p => p.data.categories || []))].sort();
+const tags = [...new Set(posts.flatMap(p => p.data.tags || []))].sort();
+
+// 按年份分组
 const postsByYear = posts.reduce((acc, post) => {
     const year = post.data.pubDate.getFullYear();
     if (!acc[year]) acc[year] = [];
@@ -34,57 +37,102 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
     <div class="mx-auto max-w-[95%] md:max-w-[80%]">
         <div class="flex flex-col lg:flex-row gap-8">
 
-            <!-- Left Sidebar: Just Profile -->
             <aside class="lg:w-1/4">
-                <div class="sticky top-28">
+                <div class="sticky top-28 space-y-6">
                     <Profile />
+
+                    <!-- Filter Controls Panel -->
+                    <Panel class="p-6! text-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-zinc-900 dark:text-zinc-100">Filters</h3>
+                            <button id="reset-filter" class="text-xs text-blue-600 dark:text-blue-400 hover:underline hidden">Clear</button>
+                        </div>
+
+                        <!-- Categories -->
+                        <div class="mb-6">
+                            <div class="font-medium text-zinc-500 mb-2 text-xs uppercase tracking-wider">Categories</div>
+                            <div class="flex flex-wrap gap-2">
+                                {categories.map(cat => (
+                                        <button
+                                                data-filter-type="category"
+                                                data-value={cat}
+                                                class="filter-btn px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-white/5 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-zinc-600 dark:text-zinc-400 transition-colors text-xs"
+                                        >
+                                            {cat}
+                                        </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <!-- Tags -->
+                        <div>
+                            <div class="font-medium text-zinc-500 mb-2 text-xs uppercase tracking-wider">Tags</div>
+                            <div class="flex flex-wrap gap-2">
+                                {tags.map(tag => (
+                                        <button
+                                                data-filter-type="tag"
+                                                data-value={tag}
+                                                class="filter-btn px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-white/5 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-zinc-600 dark:text-zinc-400 transition-colors text-xs"
+                                        >
+                                            #{tag}
+                                        </button>
+                                ))}
+                            </div>
+                        </div>
+                    </Panel>
                 </div>
             </aside>
 
-            <!-- Right Content: Timeline Archive -->
             <main class="lg:w-3/4">
                 <Panel>
-                    <h1 class="text-3xl font-bold mb-8 flex items-center gap-3 text-zinc-800 dark:text-zinc-100">
-                        <i class="fa-solid fa-box-archive text-zinc-400"></i>
-                        Archive
-                    </h1>
+                    <div class="flex items-center justify-between mb-8 border-b border-zinc-200 dark:border-white/10 pb-4">
+                        <h1 class="text-3xl font-bold flex items-center gap-3 text-zinc-800 dark:text-zinc-100">
+                            <i class="fa-solid fa-box-archive text-zinc-400"></i>
+                            Archive
+                        </h1>
+                        <span id="post-count" class="text-zinc-500 text-sm">{posts.length} posts</span>
+                    </div>
 
-                    <div class="space-y-10 relative border-l border-zinc-200 dark:border-white/10 ml-3 md:ml-6 pl-6 md:pl-8 py-2">
+                    <div id="archive-container" class="space-y-12">
                         {years.map(year => (
-                                <div class="relative">
-                                    {/* Year Marker */}
-                                    <span class="absolute -left-[3.2rem] md:-left-[3.7rem] top-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-700/30 text-blue-600 dark:text-blue-300 text-xs font-bold ring-4 ring-white dark:ring-[#1a1b26]">
-                                    {year}
-                                </span>
+                                <div class="year-section animate-fade-in-up" data-year={year}>
+                                    <!-- Redesigned Year Header: Clean & Inside Flow -->
+                                    <h2 class="text-2xl font-bold text-zinc-300 dark:text-white/20 mb-6 select-none border-l-4 border-blue-500/50 pl-4">
+                                        {year}
+                                    </h2>
 
-                                    <div class="space-y-6">
+                                    <div class="grid gap-4">
                                         {postsByYear[Number(year)].map(post => (
-                                                <article class="group relative flex flex-col sm:flex-row gap-2 sm:gap-4 sm:items-baseline transition-all">
-
-                                                    {/* Date */}
-                                                    <div class="shrink-0 w-24 text-sm text-zinc-400 font-mono pt-1">
+                                                <article
+                                                        class="archive-item p-4 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex flex-col sm:flex-row gap-4 group"
+                                                        data-categories={post.data.categories?.join(',') || ''}
+                                                        data-tags={post.data.tags?.join(',') || ''}
+                                                >
+                                                    <div class="w-16 sm:w-20 shrink-0 text-sm text-zinc-500 dark:text-zinc-400 font-mono pt-1">
                                                         {post.data.pubDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
                                                     </div>
 
-                                                    {/* Title & Meta */}
-                                                    <div class="grow pb-4 border-b border-zinc-100 dark:border-white/5 group-last:border-0">
-                                                        <a href={`/blog/${post.id}/`} class="block text-lg font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">
+                                                    <div class="grow min-w-0">
+                                                        <a href={`/blog/${post.id}/`} class="block text-lg font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2">
                                                             {post.data.title}
                                                         </a>
 
-                                                        <div class="flex flex-wrap items-center gap-3 text-xs text-zinc-500 dark:text-zinc-500">
+                                                        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500">
                                                             {post.data.categories && (
-                                                                    <span class="flex items-center gap-1">
-                                                            <i class="fa-regular fa-folder"></i>
-                                                                        {post.data.categories[0]}
-                                                        </span>
+                                                                    <div class="flex items-center gap-2">
+                                                                        {post.data.categories.map(c => (
+                                                                                <span class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 px-1.5 py-0.5 rounded">
+                                                                    {c}
+                                                                </span>
+                                                                        ))}
+                                                                    </div>
                                                             )}
 
                                                             {post.data.tags && (
-                                                                    <span class="flex items-center gap-2">
-                                                            <i class="fa-solid fa-hashtag opacity-50"></i>
-                                                                        {post.data.tags.slice(0, 3).join(', ')}
-                                                        </span>
+                                                                    <div class="flex items-center gap-2 opacity-70">
+                                                                        <i class="fa-solid fa-hashtag text-[10px]"></i>
+                                                                        <span>{post.data.tags.join(', ')}</span>
+                                                                    </div>
                                                             )}
                                                         </div>
                                                     </div>
@@ -94,11 +142,112 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
                                 </div>
                         ))}
                     </div>
+
+                    <div id="no-results" class="hidden py-20 text-center text-zinc-500">
+                        <i class="fa-regular fa-folder-open text-4xl mb-4 opacity-50"></i>
+                        <p>No posts found for this filter.</p>
+                    </div>
                 </Panel>
             </main>
         </div>
     </div>
 </div>
 <Footer />
+
+<script>
+    document.addEventListener('astro:page-load', () => {
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const items = document.querySelectorAll('.archive-item');
+        const yearSections = document.querySelectorAll('.year-section');
+        const resetBtn = document.getElementById('reset-filter');
+        const noResults = document.getElementById('no-results');
+        const postCount = document.getElementById('post-count');
+
+        // Check URL hash on load
+        const checkHash = () => {
+            const hash = window.location.hash; // #category-Name or #tag-Name
+            if (hash) {
+                const [type, val] = hash.replace('#', '').split('-');
+                if (type && val) {
+                    applyFilter(type, decodeURIComponent(val));
+                }
+            }
+        };
+
+        function applyFilter(type: string, value: string) {
+            let visibleCount = 0;
+
+            // Highlight Button
+            filterBtns.forEach(btn => {
+                const btnType = btn.getAttribute('data-filter-type');
+                const btnVal = btn.getAttribute('data-value');
+                if (btnType === type && btnVal === value) {
+                    btn.classList.add('bg-blue-600', 'text-white', 'dark:bg-blue-600', 'dark:text-white');
+                    btn.classList.remove('bg-zinc-100', 'text-zinc-600', 'dark:bg-white/5', 'dark:text-zinc-400');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white', 'dark:bg-blue-600', 'dark:text-white');
+                    btn.classList.add('bg-zinc-100', 'text-zinc-600', 'dark:bg-white/5', 'dark:text-zinc-400');
+                }
+            });
+
+            resetBtn?.classList.remove('hidden');
+
+            items.forEach(item => {
+                const el = item as HTMLElement;
+                const categories = el.dataset.categories?.split(',') || [];
+                const tags = el.dataset.tags?.split(',') || [];
+                let match = false;
+
+                if (type === 'category') match = categories.includes(value);
+                if (type === 'tag') match = tags.includes(value);
+
+                if (match) {
+                    el.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+
+            // Hide Empty Years
+            yearSections.forEach(section => {
+                const visibleItems = (section as HTMLElement).querySelectorAll('.archive-item[style="display: flex;"]');
+                (section as HTMLElement).style.display = visibleItems.length > 0 ? 'block' : 'none';
+            });
+
+            if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+            if (postCount) postCount.textContent = `${visibleCount} posts found`;
+        }
+
+        function reset() {
+            items.forEach(el => (el as HTMLElement).style.display = 'flex');
+            yearSections.forEach(el => (el as HTMLElement).style.display = 'block');
+            filterBtns.forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'dark:bg-blue-600', 'dark:text-white');
+                btn.classList.add('bg-zinc-100', 'text-zinc-600', 'dark:bg-white/5', 'dark:text-zinc-400');
+            });
+            resetBtn?.classList.add('hidden');
+            if (noResults) noResults.style.display = 'none';
+            if (postCount) postCount.textContent = `${items.length} posts`;
+            history.replaceState(null, '', window.location.pathname);
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.getAttribute('data-filter-type');
+                const val = btn.getAttribute('data-value');
+                if (type && val) {
+                    applyFilter(type, val);
+                    window.location.hash = `${type}-${val}`;
+                }
+            });
+        });
+
+        resetBtn?.addEventListener('click', reset);
+
+        // Initial check
+        checkHash();
+    });
+</script>
 </body>
 </html>
