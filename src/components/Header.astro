@@ -54,7 +54,7 @@ import { SITE_TITLE } from '../consts';
 			</button>
 		</div>
 
-		<!-- Mobile Navigation Menu (Hidden by default, shown when open) -->
+		<!-- Mobile Navigation Menu -->
 		<div
 			class="md:hidden flex flex-col gap-2 pt-4 pb-2
                    opacity-0 pointer-events-none
@@ -71,34 +71,43 @@ import { SITE_TITLE } from '../consts';
 </header>
 
 <script>
-	const menuBtn = document.getElementById('menu-btn');
-	const navContainer = document.getElementById('nav-container');
-	const mobileMenu = document.getElementById('mobile-menu');
+	function initMenu() {
+		const menuBtn = document.getElementById('menu-btn');
+		const navContainer = document.getElementById('nav-container');
+		const mobileMenu = document.getElementById('mobile-menu');
 
-	menuBtn?.addEventListener('click', (e) => {
-		e.stopPropagation();
-		const isOpen = navContainer?.getAttribute('data-state') === 'open';
-
-		if (isOpen) {
-			navContainer?.setAttribute('data-state', 'closed');
-			mobileMenu?.setAttribute('data-visible', 'false');
-		} else {
-			navContainer?.setAttribute('data-state', 'open');
-			mobileMenu?.setAttribute('data-visible', 'true');
-		}
-	});
-
-	// Close menu when clicking outside
-	document.addEventListener('click', (e) => {
-		if (navContainer && !navContainer.contains(e.target as Node)) {
-			navContainer.setAttribute('data-state', 'closed');
-			mobileMenu?.setAttribute('data-visible', 'false');
-		}
-	});
-
-	// Close menu when navigating
-	document.addEventListener('astro:page-load', () => {
+		// Reset state on initialization
 		navContainer?.setAttribute('data-state', 'closed');
 		mobileMenu?.setAttribute('data-visible', 'false');
-	});
+
+		const toggleMenu = (e: Event) => {
+			e.stopPropagation();
+			const isOpen = navContainer?.getAttribute('data-state') === 'open';
+			if (isOpen) {
+				navContainer?.setAttribute('data-state', 'closed');
+				mobileMenu?.setAttribute('data-visible', 'false');
+			} else {
+				navContainer?.setAttribute('data-state', 'open');
+				mobileMenu?.setAttribute('data-visible', 'true');
+			}
+		};
+
+		const closeMenu = (e: Event) => {
+			if (navContainer && !navContainer.contains(e.target as Node)) {
+				navContainer.setAttribute('data-state', 'closed');
+				mobileMenu?.setAttribute('data-visible', 'false');
+			}
+		};
+
+		// Remove old listeners to prevent duplicates if any (though page-load usually implies fresh DOM)
+		menuBtn?.removeEventListener('click', toggleMenu);
+		document.removeEventListener('click', closeMenu);
+
+		// Add listeners
+		menuBtn?.addEventListener('click', toggleMenu);
+		document.addEventListener('click', closeMenu);
+	}
+
+	// Run on every page navigation
+	document.addEventListener('astro:page-load', initMenu);
 </script>
