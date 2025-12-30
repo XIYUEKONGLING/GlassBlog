@@ -11,11 +11,9 @@ const posts = (await getCollection('blog')).sort(
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 
-// 获取所有分类和标签用于筛选器
 const categories = [...new Set(posts.flatMap(p => p.data.categories || []))].sort();
 const tags = [...new Set(posts.flatMap(p => p.data.tags || []))].sort();
 
-// 按年份分组
 const postsByYear = posts.reduce((acc, post) => {
     const year = post.data.pubDate.getFullYear();
     if (!acc[year]) acc[year] = [];
