@@ -1,10 +1,40 @@
 ---
 import Panel from "./Panel.astro";
+import {ANOTHER_AVATAR, ANOTHER_AVATAR_QUALITY, ANOTHER_DESCRIPTION, ANOTHER_NAME} from "../consts.ts";
+
+import type { HTMLAttributes } from 'astro/types';
+import Image from "astro/components/Image.astro";
+interface Props extends HTMLAttributes<'div'> {}
+const { class: className, ...props } = Astro.props;
 
 ---
 
-<div>
-    <Panel>
-        
-    </Panel>
-</div>
+<Panel class:list={[
+    "flex flex-col items-center justify-center p-8 space-y-4",
+    className,
+]}>
+    <div class="relative">
+        <Image
+                src={ANOTHER_AVATAR}
+                alt={ANOTHER_NAME}
+                width={128}
+                height={128}
+                class="h-32 w-32 rounded-full shadow-lg object-cover"
+                loading="lazy"
+                decoding="async"
+                format="webp"
+                quality={ANOTHER_AVATAR_QUALITY}
+        />
+    </div>
+    <div class="text-center">
+        <h2 class="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-2">
+            {ANOTHER_NAME}
+        </h2>
+        { ANOTHER_DESCRIPTION && (
+                <p class="text-gray-700 dark:text-zinc-400 text-sm leading-relaxed max-w-md">
+                    {ANOTHER_DESCRIPTION}
+                </p>
+        )}
+    </div>
+</Panel>
+
