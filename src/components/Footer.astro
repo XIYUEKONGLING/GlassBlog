@@ -1,3 +1,12 @@
 ---
+import FloatingControls from './FloatingControls.astro';
 
+const today = new Date();
 ---
+
+<footer class="w-full text-center py-8 text-zinc-500 dark:text-zinc-400 text-sm">
+    &copy; {today.getFullYear()} Your Name. All rights reserved.
+
+    <!-- Floating Action Buttons -->
+    <FloatingControls />
+</footer>

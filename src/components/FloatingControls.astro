@@ -1,0 +1,136 @@
+---
+
+---
+
+<div class="fixed bottom-6 right-6 z-40 flex flex-col gap-3 pointer-events-none">
+
+    <!-- Theme Toggle Button -->
+    <button
+            id="theme-toggle"
+            class="group pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full 
+               bg-white/60 dark:bg-black/40 
+               border border-white/40 dark:border-white/10
+               shadow-lg shadow-zinc-200/20 dark:shadow-zinc-900/20
+               backdrop-blur-[20px] backdrop-saturate-150
+               transition-all duration-300 ease-out
+               hover:scale-110 hover:bg-white/80 dark:hover:bg-black/60
+               focus:outline-none"
+            aria-label="Toggle Theme"
+            title="Toggle Theme"
+    >
+        <!-- Sun Icon (Light) -->
+        <svg class="hidden w-5 h-5 text-amber-500 transition-transform duration-300 group-hover:rotate-90" id="icon-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+
+        <!-- Moon Icon (Dark) -->
+        <svg class="hidden w-5 h-5 text-blue-400 transition-transform duration-300 group-hover:-rotate-12" id="icon-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+
+        <!-- System Icon (Auto) -->
+        <svg class="hidden w-5 h-5 text-zinc-600 dark:text-zinc-400 transition-transform duration-300" id="icon-system" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+    </button>
+
+    <!-- Back to Top Button -->
+    <button
+            id="back-to-top"
+            class="group pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full 
+               bg-white/60 dark:bg-black/40 
+               border border-white/40 dark:border-white/10
+               shadow-lg shadow-zinc-200/20 dark:shadow-zinc-900/20
+               backdrop-blur-[20px] backdrop-saturate-150
+               transition-all duration-500 ease-out
+               translate-y-20 opacity-0
+               hover:scale-110 hover:bg-white/80 dark:hover:bg-black/60
+               focus:outline-none"
+            aria-label="Back to Top"
+    >
+        <svg class="w-5 h-5 text-zinc-700 dark:text-zinc-200 transition-transform duration-300 group-hover:-translate-y-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+    </button>
+
+</div>
+
+<script>
+    // --- Theme Logic ---
+    const themeBtn = document.getElementById('theme-toggle');
+    const iconLight = document.getElementById('icon-light');
+    const iconDark = document.getElementById('icon-dark');
+    const iconSystem = document.getElementById('icon-system');
+
+    // States: 'light' | 'dark' | 'system'
+    type ThemeState = 'light' | 'dark' | 'system';
+
+    function getTheme(): ThemeState {
+        return (localStorage.getItem('theme') as ThemeState) || 'system';
+    }
+
+    function setTheme(theme: ThemeState) {
+        localStorage.setItem('theme', theme);
+        applyTheme(theme);
+        updateIcons(theme);
+    }
+
+    function applyTheme(theme: ThemeState) {
+        const isDark =
+            theme === 'dark' ||
+            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }
+
+    function updateIcons(theme: ThemeState) {
+        iconLight?.classList.add('hidden');
+        iconDark?.classList.add('hidden');
+        iconSystem?.classList.add('hidden');
+
+        if (theme === 'light') iconLight?.classList.remove('hidden');
+        else if (theme === 'dark') iconDark?.classList.remove('hidden');
+        else iconSystem?.classList.remove('hidden');
+    }
+
+    // Initialize
+    const currentTheme = getTheme();
+    applyTheme(currentTheme);
+    updateIcons(currentTheme);
+
+    // Toggle Logic: System -> Light -> Dark -> System
+    themeBtn?.addEventListener('click', () => {
+        const current = getTheme();
+        let next: ThemeState = 'system';
+
+        if (current === 'system') next = 'light';
+        else if (current === 'light') next = 'dark';
+        else if (current === 'dark') next = 'system';
+
+        setTheme(next);
+    });
+
+    // Listen for system changes if in system mode
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (getTheme() === 'system') {
+            applyTheme('system');
+        }
+    });
+
+
+    // --- Back to Top Logic ---
+    const backToTopBtn = document.getElementById('back-to-top');
+
+    function toggleBackToTop() {
+        if (window.scrollY > 300) {
+            backToTopBtn?.classList.remove('translate-y-20', 'opacity-0');
+        } else {
+            backToTopBtn?.classList.add('translate-y-20', 'opacity-0');
+        }
+    }
+
+    window.addEventListener('scroll', toggleBackToTop, { passive: true });
+
+    backToTopBtn?.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Initial check
+    toggleBackToTop();
+</script>
