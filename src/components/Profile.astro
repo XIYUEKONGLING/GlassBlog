@@ -19,7 +19,11 @@ const { class: className, ...props } = Astro.props;
                 alt={ANOTHER_NAME}
                 width={128}
                 height={128}
-                class="h-32 w-32 rounded-full shadow-lg object-cover"
+                class:list={[
+                    "h-32 w-32 rounded-full shadow-lg object-cover",
+                    "hover:scale-105 hover:-rotate-2 transition",
+                    "hover:shadow-2xl",
+                ]}
                 loading="lazy"
                 decoding="async"
                 format="webp"
