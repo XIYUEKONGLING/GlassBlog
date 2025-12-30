@@ -1,5 +1,5 @@
 ---
-import ButtonHeader from './ButtonHeader.astro';
+import HeaderButton from './HeaderButton.astro';
 import { SITE_TITLE } from '../consts';
 ---
 
@@ -33,9 +33,9 @@ import { SITE_TITLE } from '../consts';
 
 			<!-- Desktop Navigation -->
 			<div class="hidden md:flex gap-2">
-				<ButtonHeader href="/">Home</ButtonHeader>
-				<ButtonHeader href="/blog">Blog</ButtonHeader>
-				<ButtonHeader href="/about">About</ButtonHeader>
+				<HeaderButton href="/">Home</HeaderButton>
+				<HeaderButton href="/blog">Blog</HeaderButton>
+				<HeaderButton href="/about">About</HeaderButton>
 			</div>
 
 			<!-- Mobile Menu Button -->
@@ -61,9 +61,9 @@ import { SITE_TITLE } from '../consts';
                    data-[visible=true]:opacity-100 data-[visible=true]:pointer-events-auto"
 			id="mobile-menu"
 		>
-			<ButtonHeader href="/" class="w-full text-center justify-center">Home</ButtonHeader>
-			<ButtonHeader href="/blog" class="w-full text-center justify-center">Blog</ButtonHeader>
-			<ButtonHeader href="/about" class="w-full text-center justify-center">About</ButtonHeader>
+			<HeaderButton href="/" class="w-full text-center justify-center">Home</HeaderButton>
+			<HeaderButton href="/blog" class="w-full text-center justify-center">Blog</HeaderButton>
+			<HeaderButton href="/about" class="w-full text-center justify-center">About</HeaderButton>
 		</div>
 	</nav>
 </header>
