@@ -5,6 +5,11 @@
 // Website Settings
 export const SITE_TITLE = "Glass Blog";
 export const SITE_DESCRIPTION = "Welcome to my website!";
+export const SITE_AUTHOR = "XIYUEKONGLING";
+
+// License Settings
+export const SITE_LICENSE = "CC BY-NC-SA 4.0";
+export const SITE_LICENSE_URL = "https://creativecommons.org/licenses/by-nc-sa/4.0/";
 
 
 // Another Profile Settings

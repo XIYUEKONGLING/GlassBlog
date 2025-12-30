@@ -1,11 +1,81 @@
 ---
 import FloatingControls from './FloatingControls.astro';
+import Panel from './Panel.astro';
+import { SITE_AUTHOR, SITE_LICENSE, SITE_LICENSE_URL } from '../consts';
 
 const today = new Date();
 ---
 
-<footer class="w-full text-center py-8 text-zinc-500 dark:text-zinc-400 text-sm">
-    &copy; {today.getFullYear()} Your Name. All rights reserved.
+<footer class="w-full py-8 text-sm relative z-10 mt-auto">
+    <!-- 
+        Using Panel Component for consistent border-radius and glass effect.
+        Matches the width of the Header and Main Content.
+    -->
+    <Panel class="mx-auto max-w-[95%] md:max-w-[80%] flex flex-col gap-3 text-center py-6!">
+
+        <!-- Copyright & Author -->
+        <div class="text-zinc-800 dark:text-zinc-200 font-medium">
+            &copy; {today.getFullYear()} {SITE_AUTHOR}. All rights reserved.
+        </div>
+
+        <!-- License Info -->
+        {SITE_LICENSE && (
+                <div class="text-xs text-zinc-600 dark:text-zinc-400">
+                    Content is licensed under
+                    <a
+                            href={SITE_LICENSE_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="font-medium text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+                    >
+                        {SITE_LICENSE}
+                    </a>
+                    unless otherwise noted.
+                </div>
+        )}
+
+        <!-- Divider -->
+        <div class="w-16 h-px bg-zinc-400/30 dark:bg-white/10 mx-auto my-1"></div>
+
+        <!-- Dynamic Background Credits -->
+        <div class="text-xs text-zinc-500 dark:text-zinc-500 transition-opacity duration-300">
+            <span class="mr-1 opacity-70">Background photo by</span>
+
+            <!-- Light Mode Credit (Hidden in Dark) -->
+            <span class="dark:hidden">
+                <a
+                        href="https://unsplash.com/@eugene_golovesov?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="font-medium text-zinc-700 hover:text-black underline decoration-zinc-400/50 hover:decoration-black transition-colors"
+                >Eugene Golovesov</a>
+                on 
+                <a
+                        href="https://unsplash.com/photos/bare-tree-covered-in-frost-during-winter-KEDgXIN4nEQ?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="font-medium text-zinc-700 hover:text-black underline decoration-zinc-400/50 hover:decoration-black transition-colors"
+                >Unsplash</a>
+            </span>
+
+            <!-- Dark Mode Credit (Hidden in Light) -->
+            <span class="hidden dark:inline">
+                <a
+                        href="https://unsplash.com/@marcozzolo90?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="font-medium text-zinc-400 hover:text-white underline decoration-zinc-600/50 hover:decoration-white transition-colors"
+                >Marco Grosso</a>
+                on 
+                <a
+                        href="https://unsplash.com/photos/rocky-formation-under-a-starry-night-sky-zj_WL_5KUMY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="font-medium text-zinc-400 hover:text-white underline decoration-zinc-600/50 hover:decoration-white transition-colors"
+                >Unsplash</a>
+            </span>
+        </div>
+    </Panel>
 
     <!-- Floating Action Buttons -->
     <FloatingControls />
