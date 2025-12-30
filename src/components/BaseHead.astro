@@ -33,15 +33,21 @@ const { title, description, image = FallbackImage } = Astro.props;
 />
 <meta name="generator" content={Astro.generator} />
 
-<!-- Theme Initialization Script (Prevents FOUC) -->
+<!-- Theme Initialization Script (Prevents FOUC & Fixes Flash) -->
 <script is:inline>
-	const theme = localStorage.getItem('theme') || 'system';
-	const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-	if (isDark) {
-		document.documentElement.classList.add('dark');
-	} else {
-		document.documentElement.classList.remove('dark');
-	}
+	const applyTheme = () => {
+		const theme = localStorage.getItem('theme') || 'system';
+		const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+		if (isDark) {
+			document.documentElement.classList.add('dark');
+		} else {
+			document.documentElement.classList.remove('dark');
+		}
+	};
+
+	applyTheme();
+	document.addEventListener('astro:after-swap', applyTheme);
 </script>
 
 <!-- Font preloads -->

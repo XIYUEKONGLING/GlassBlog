@@ -34,13 +34,15 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
 
             <aside class="lg:w-1/4">
                 <Sidebar>
-                    <!-- Sidebar Filters Control -->
+                    <!-- Active Filters Display -->
                     <Panel class="p-5! text-sm hidden" id="active-filter-panel">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-zinc-900 dark:text-zinc-100">Active Filter</h3>
-                            <button id="reset-filter" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Clear</button>
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-bold text-zinc-900 dark:text-zinc-100">Active Filters</h3>
+                            <button id="reset-filter" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Clear All</button>
                         </div>
-                        <div id="filter-status" class="mt-2 text-zinc-600 dark:text-zinc-400 wrap-break-word font-mono text-xs bg-zinc-100 dark:bg-white/5 p-2 rounded"></div>
+                        <div id="filter-tags-container" class="flex flex-wrap gap-2">
+                            <!-- JS will inject active tags here -->
+                        </div>
                     </Panel>
                 </Sidebar>
             </aside>
@@ -63,9 +65,9 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
                                     </h2>
 
                                     <div class="flex flex-col">
-                                        {postsByYear[Number(year)].map((post, index) => (
+                                        {postsByYear[Number(year)].map((post) => (
                                                 <article
-                                                        class="archive-item flex flex-col sm:flex-row gap-2 sm:gap-6 py-4 border-b border-zinc-200/50 dark:border-white/5 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-white/[0.02] transition-colors rounded-lg px-2"
+                                                        class="archive-item flex flex-col sm:flex-row gap-2 sm:gap-6 py-4 border-b border-zinc-200/50 dark:border-white/5 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-white/2 transition-colors rounded-lg px-2"
                                                         data-categories={post.data.categories?.join(',') || ''}
                                                         data-tags={post.data.tags?.join(',') || ''}
                                                 >
@@ -106,7 +108,7 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
 
                     <div id="no-results" class="hidden py-20 text-center text-zinc-500">
                         <i class="fa-regular fa-folder-open text-4xl mb-4 opacity-50"></i>
-                        <p>No posts found for this filter.</p>
+                        <p>No posts found for these filters.</p>
                     </div>
                 </Panel>
             </main>
@@ -121,40 +123,29 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
         const yearSections = document.querySelectorAll('.year-section');
         const resetBtn = document.getElementById('reset-filter');
         const activeFilterPanel = document.getElementById('active-filter-panel');
-        const filterStatus = document.getElementById('filter-status');
+        const filterTagsContainer = document.getElementById('filter-tags-container');
         const noResults = document.getElementById('no-results');
         const postCount = document.getElementById('post-count');
+        const sidebarLinks = document.querySelectorAll('.sidebar-filter-link');
 
-        // Check URL hash for filter
-        const checkHash = () => {
-            const hash = window.location.hash; // e.g., #category-Tech
-            if (hash) {
-                const [type, val] = hash.replace('#', '').split('-');
-                if (type && val) {
-                    applyFilter(type, decodeURIComponent(val));
-                }
-            }
-        };
+        // Main Filter Function
+        function updateUI() {
+            const params = new URLSearchParams(window.location.search);
+            const activeCategories = params.getAll('category');
+            const activeTags = params.getAll('tag');
 
-        function applyFilter(type: string, value: string) {
             let visibleCount = 0;
 
-            // Show Active Filter Panel
-            if (activeFilterPanel && filterStatus) {
-                activeFilterPanel.classList.remove('hidden');
-                filterStatus.textContent = `${type}: ${value}`;
-            }
-
+            // 1. Show/Hide Posts (Logic: Must match ALL active filters)
             items.forEach(item => {
                 const el = item as HTMLElement;
-                const categories = el.dataset.categories?.split(',') || [];
-                const tags = el.dataset.tags?.split(',') || [];
-                let match = false;
+                const postCategories = el.dataset.categories?.split(',') || [];
+                const postTags = el.dataset.tags?.split(',') || [];
+                
+                const matchesCategories = activeCategories.length === 0 || activeCategories.every(c => postCategories.includes(c));
+                const matchesTags = activeTags.length === 0 || activeTags.every(t => postTags.includes(t));
 
-                if (type === 'category') match = categories.includes(value);
-                if (type === 'tag') match = tags.includes(value);
-
-                if (match) {
+                if (matchesCategories && matchesTags) {
                     el.style.display = 'flex';
                     visibleCount++;
                 } else {
@@ -162,36 +153,124 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
                 }
             });
 
-            // Hide Empty Years
+            // 2. Hide Empty Years
             yearSections.forEach(section => {
                 const visibleItems = (section as HTMLElement).querySelectorAll('.archive-item[style="display: flex;"]');
                 (section as HTMLElement).style.display = visibleItems.length > 0 ? 'block' : 'none';
             });
 
+            // 3. Update Counts and Empty State
             if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
             if (postCount) postCount.textContent = `${visibleCount} posts found`;
+
+            // 4. Render Active Filters Panel
+            if (activeCategories.length > 0 || activeTags.length > 0) {
+                activeFilterPanel?.classList.remove('hidden');
+                if (filterTagsContainer) {
+                    filterTagsContainer.innerHTML = '';
+
+                    // Render Category Badges
+                    activeCategories.forEach(cat => {
+                        const badge = createBadge(cat, 'category', () => removeFilter('category', cat));
+                        filterTagsContainer.appendChild(badge);
+                    });
+
+                    // Render Tag Badges
+                    activeTags.forEach(tag => {
+                        const badge = createBadge('#' + tag, 'tag', () => removeFilter('tag', tag));
+                        filterTagsContainer.appendChild(badge);
+                    });
+                }
+            } else {
+                activeFilterPanel?.classList.add('hidden');
+            }
+
+            // 5. Update Sidebar Styles (Highlight active)
+            sidebarLinks.forEach(link => {
+                const type = link.getAttribute('data-filter-type');
+                const val = link.getAttribute('data-filter-value');
+                const isActive = (type === 'category' && activeCategories.includes(val || '')) ||
+                    (type === 'tag' && activeTags.includes(val || ''));
+
+                if (isActive) {
+                    link.classList.add('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+                    link.classList.remove('bg-zinc-100', 'dark:bg-white/5', 'text-zinc-600', 'dark:text-zinc-400');
+                } else {
+                    link.classList.remove('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+                    if (link.classList.contains('sidebar-filter-link')) {
+                        
+                        link.classList.remove('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+                        // Add back neutral colors
+                        link.classList.add('text-zinc-600', 'dark:text-zinc-400');
+                    }
+                }
+            });
         }
 
-        function reset() {
-            items.forEach(el => (el as HTMLElement).style.display = 'flex');
-            yearSections.forEach(el => (el as HTMLElement).style.display = 'block');
-
-            if (activeFilterPanel) activeFilterPanel.classList.add('hidden');
-
-            if (noResults) noResults.style.display = 'none';
-            if (postCount) postCount.textContent = `${items.length} posts`;
-
-            // Remove hash without scrolling
-            history.pushState("", document.title, window.location.pathname + window.location.search);
+        // Helper: Create Filter Badge
+        function createBadge(text: string, type: string, onClick: () => void) {
+            const btn = document.createElement('button');
+            btn.className = "flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-zinc-200 dark:bg-white/10 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors cursor-pointer";
+            btn.innerHTML = `<span>${text}</span><i class="fa-solid fa-xmark opacity-50"></i>`;
+            btn.onclick = onClick;
+            return btn;
         }
 
-        resetBtn?.addEventListener('click', reset);
+        // Action: Remove specific filter
+        function removeFilter(type: string, value: string) {
+            const params = new URLSearchParams(window.location.search);
+            const values = params.getAll(type).filter(v => v !== value);
+            params.delete(type);
+            values.forEach(v => params.append(type, v));
 
-        // Listen for hash changes (clicking sidebar links does not trigger page reload)
-        window.addEventListener('hashchange', checkHash);
+            updateURL(params);
+        }
 
-        // Initial check
-        checkHash();
+        // Action: Toggle Filter (from Sidebar)
+        function toggleFilter(type: string, value: string) {
+            const params = new URLSearchParams(window.location.search);
+            const currentValues = params.getAll(type);
+
+            if (currentValues.includes(value)) {
+                // Remove if exists
+                const newValues = currentValues.filter(v => v !== value);
+                params.delete(type);
+                newValues.forEach(v => params.append(type, v));
+            } else {
+                // Add if not exists (Multi-select)
+                params.append(type, value);
+            }
+            updateURL(params);
+        }
+
+        // Action: Update URL & Render
+        function updateURL(params: URLSearchParams) {
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            history.pushState(null, '', newUrl);
+            updateUI();
+        }
+
+        // Event: Sidebar Click Interception
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const type = link.getAttribute('data-filter-type');
+                const val = link.getAttribute('data-filter-value');
+                if (type && val) toggleFilter(type, val);
+            });
+        });
+
+        // Event: Reset All
+        resetBtn?.addEventListener('click', () => {
+            history.pushState(null, '', window.location.pathname);
+            updateUI();
+        });
+
+        // Event: Browser Back/Forward
+        window.addEventListener('popstate', updateUI);
+
+        // Initial Load
+        updateUI();
     });
 </script>
 </body>
