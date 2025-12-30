@@ -1,5 +1,4 @@
 ---
-
 ---
 
 <div class="fixed bottom-6 right-12 z-40 flex flex-col gap-3 pointer-events-none print:hidden">
@@ -48,91 +47,80 @@
 </div>
 
 <script>
-    // --- Theme Logic ---
-    const themeBtn = document.getElementById('theme-toggle');
-    const iconLight = document.getElementById('icon-light');
-    const iconDark = document.getElementById('icon-dark');
-    const iconSystem = document.getElementById('icon-system');
+    function initControls() {
+        // --- Theme Logic ---
+        const themeBtn = document.getElementById('theme-toggle');
+        const iconLight = document.getElementById('icon-light');
+        const iconDark = document.getElementById('icon-dark');
+        const iconSystem = document.getElementById('icon-system');
 
-    type ThemeState = 'light' | 'dark' | 'system';
+        type ThemeState = 'light' | 'dark' | 'system';
 
-    function getTheme(): ThemeState {
-        return (localStorage.getItem('theme') as ThemeState) || 'system';
-    }
-
-    function setTheme(theme: ThemeState) {
-        localStorage.setItem('theme', theme);
-        applyTheme(theme);
-        updateIcons(theme);
-    }
-
-    function applyTheme(theme: ThemeState) {
-        const isDark =
-            theme === 'dark' ||
-            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-        // Toggle the class on the HTML element
-        if (isDark) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
+        function getTheme(): ThemeState {
+            return (localStorage.getItem('theme') as ThemeState) || 'system';
         }
-    }
 
-    function updateIcons(theme: ThemeState) {
-        // Hide all first
-        iconLight?.classList.add('hidden');
-        iconDark?.classList.add('hidden');
-        iconSystem?.classList.add('hidden');
-
-        // Show correct one
-        if (theme === 'light') iconLight?.classList.remove('hidden');
-        else if (theme === 'dark') iconDark?.classList.remove('hidden');
-        else iconSystem?.classList.remove('hidden');
-    }
-
-    // Initialize
-    const currentTheme = getTheme();
-    applyTheme(currentTheme);
-    updateIcons(currentTheme);
-
-    // Toggle Logic: System -> Light -> Dark -> System
-    themeBtn?.addEventListener('click', () => {
-        const current = getTheme();
-        let next: ThemeState = 'system';
-
-        if (current === 'system') next = 'light';
-        else if (current === 'light') next = 'dark';
-        else if (current === 'dark') next = 'system';
-
-        setTheme(next);
-    });
-
-    // Listen for system changes if in system mode
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (getTheme() === 'system') {
-            applyTheme('system');
+        function setTheme(theme: ThemeState) {
+            localStorage.setItem('theme', theme);
+            applyTheme(theme);
+            updateIcons(theme);
         }
-    });
 
+        function applyTheme(theme: ThemeState) {
+            const isDark =
+                theme === 'dark' ||
+                (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-    // --- Back to Top Logic ---
-    const backToTopBtn = document.getElementById('back-to-top');
-
-    function toggleBackToTop() {
-        if (window.scrollY > 300) {
-            backToTopBtn?.classList.remove('translate-y-20', 'opacity-0');
-        } else {
-            backToTopBtn?.classList.add('translate-y-20', 'opacity-0');
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
         }
+
+        function updateIcons(theme: ThemeState) {
+            iconLight?.classList.add('hidden');
+            iconDark?.classList.add('hidden');
+            iconSystem?.classList.add('hidden');
+
+            if (theme === 'light') iconLight?.classList.remove('hidden');
+            else if (theme === 'dark') iconDark?.classList.remove('hidden');
+            else iconSystem?.classList.remove('hidden');
+        }
+
+        const currentTheme = getTheme();
+        applyTheme(currentTheme);
+        updateIcons(currentTheme);
+
+        themeBtn?.addEventListener('click', () => {
+            const current = getTheme();
+            let next: ThemeState = 'system';
+            if (current === 'system') next = 'light';
+            else if (current === 'light') next = 'dark';
+            else if (current === 'dark') next = 'system';
+            setTheme(next);
+        });
+
+        // --- Back to Top Logic ---
+        const backToTopBtn = document.getElementById('back-to-top');
+
+        function toggleBackToTop() {
+            if (window.scrollY > 300) {
+                backToTopBtn?.classList.remove('translate-y-20', 'opacity-0');
+            } else {
+                backToTopBtn?.classList.add('translate-y-20', 'opacity-0');
+            }
+        }
+
+        window.removeEventListener('scroll', toggleBackToTop);
+        window.addEventListener('scroll', toggleBackToTop, { passive: true });
+
+        backToTopBtn?.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        toggleBackToTop();
     }
 
-    window.addEventListener('scroll', toggleBackToTop, { passive: true });
-
-    backToTopBtn?.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    // Initial check
-    toggleBackToTop();
+    document.addEventListener('astro:page-load', initControls);
 </script>
