@@ -5,15 +5,18 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import Panel from "../components/Panel.astro";
+import Profile from "../components/Profile.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import { Image } from 'astro:assets';
 import { SITE_TITLE } from "../consts.ts";
 
 type Props = CollectionEntry<'blog'>['data'] & {
-	headings: { depth: number; slug: string; text: string }[];
+	headings?: { depth: number; slug: string; text: string }[];
 };
 
-const { title, description, pubDate, updatedDate, heroImage, headings } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, headings = [], categories, tags } = Astro.props;
+
+const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 ---
 
 <html lang="en">
@@ -28,40 +31,79 @@ const { title, description, pubDate, updatedDate, heroImage, headings } = Astro.
 	<div class="mx-auto max-w-[95%] md:max-w-[80%]">
 		<div class="flex flex-col lg:flex-row gap-8">
 
-			<!-- Left Sidebar: Table of Contents -->
-			<aside class="hidden lg:block lg:w-1/4 order-2 lg:order-1">
-				<div class="sticky top-28">
-					<Panel class="p-4!">
-						<TableOfContents headings={headings} />
-					</Panel>
+			<!-- Left Sidebar: Profile + Optional TOC -->
+			<aside class="lg:w-1/4">
+				<div class="sticky top-28 flex flex-col gap-6">
+					<Profile />
+
+					{showToc && (
+						<Panel class="p-4!">
+							<TableOfContents headings={headings} />
+						</Panel>
+					)}
 				</div>
 			</aside>
 
 			<!-- Main Content -->
-			<article class="w-full lg:w-3/4 order-1 lg:order-2">
+			<article class="w-full lg:w-3/4">
 				<Panel>
+					{/* Hero Image */}
 					<div class="w-full mb-8">
-						{heroImage && <Image width={1020} height={510} src={heroImage} alt="" class="rounded-xl shadow-lg w-full object-cover" />}
+						{heroImage ? (
+							<Image width={1020} height={510} src={heroImage} alt="" class="rounded-xl shadow-lg w-full object-cover max-h-125" />
+						) : (
+                            <div class="w-full h-8 bg-gradient-to-r from-zinc-100 to-zinc-50 dark:from-white/5 dark:to-white/0 rounded-t-xl mb-4"></div>
+						)}
 					</div>
 
-					<div class="prose dark:prose-invert max-w-none">
-						<div class="mb-8 text-center">
-							<div class="text-zinc-500 dark:text-zinc-400 mb-2">
-								<FormattedDate date={pubDate} />
-								{
-									updatedDate && (
-										<div class="italic text-xs mt-1">
-											Last updated on <FormattedDate date={updatedDate} />
-										</div>
-									)
-								}
+					{/* Header */}
+					<div class="mb-10 text-center border-b border-zinc-200 dark:border-white/10 pb-8">
+						{categories && categories.length > 0 && (
+							<div class="flex justify-center gap-2 mb-4">
+								{categories.map(cat => (
+									<span class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 px-3 py-1 rounded-full">
+                                        {cat}
+                                    </span>
+								))}
 							</div>
-							<h1 class="text-4xl font-bold mb-2 leading-tight">{title}</h1>
-							<hr class="border-zinc-200 dark:border-white/10 my-4" />
-						</div>
+						)}
 
+						<h1 class="text-3xl md:text-5xl font-bold mb-6 leading-tight text-zinc-900 dark:text-zinc-100">{title}</h1>
+
+						<div class="flex flex-wrap items-center justify-center gap-6 text-sm text-zinc-500 dark:text-zinc-400">
+							<div class="flex items-center gap-2">
+								<i class="fa-regular fa-calendar"></i>
+								<FormattedDate date={pubDate} />
+							</div>
+							{updatedDate && (
+								<div class="flex items-center gap-2 text-zinc-400" title="Last Updated">
+									<i class="fa-solid fa-rotate-right"></i>
+									<FormattedDate date={updatedDate} />
+								</div>
+							)}
+						</div>
+					</div>
+
+					{/* Content */}
+					<div class="prose dark:prose-invert max-w-none prose-img:rounded-xl">
 						<slot />
 					</div>
+
+					{/* Tags */}
+					{tags && tags.length > 0 && (
+						<div class="mt-12 pt-6 border-t border-zinc-200 dark:border-white/10">
+							<div class="flex items-center gap-3">
+								<i class="fa-solid fa-tags text-zinc-400"></i>
+								<div class="flex flex-wrap gap-2">
+									{tags.map(tag => (
+										<a href={`/archive`} class="text-sm px-3 py-1 bg-zinc-100 dark:bg-white/5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+											#{tag}
+										</a>
+									))}
+								</div>
+							</div>
+						</div>
+					)}
 				</Panel>
 			</article>
 
