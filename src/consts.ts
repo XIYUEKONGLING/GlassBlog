@@ -26,3 +26,11 @@ export const ANOTHER_PRONOUNS : string | null = "She/Her";
 
 export const ANOTHER_LOCATION: string | null = "ZheJiang, China";
 export const ANOTHER_TIMEZONE: string = "Asia/Shanghai";
+
+// Social Media Links
+// icon: FontAwesome class (e.g., "fa-brands fa-github", "fa-solid fa-envelope")
+export const SOCIAL_LINKS: { icon: string; url: string; label: string }[] = [
+    { icon: "fa-brands fa-github", url: "https://github.com/XIYUEKONGLING/", label: "GitHub" },
+    { icon: "fa-brands fa-twitter", url: "https://x.com/XiYueKongLing/", label: "Twitter" },
+    { icon: "fa-solid fa-rss", url: "/rss.xml", label: "RSS" },
+];
