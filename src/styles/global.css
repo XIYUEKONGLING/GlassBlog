@@ -91,6 +91,7 @@ html.dark::after {
 	margin-right: auto;
 }
 
+/* 1. Images */
 .prose img {
 	border-radius: 0.75rem;
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -102,6 +103,7 @@ html.dark::after {
 	transform: scale(1.01);
 }
 
+/* 2. Links */
 .prose a {
 	text-decoration: none;
 	color: #2563eb;
@@ -118,53 +120,94 @@ html.dark::after {
 	border-bottom-color: #60a5fa;
 }
 
-.prose pre {
-	border-radius: 0.75rem;
-	padding: 1rem;
-	border: 1px solid rgba(0,0,0,0.05);
+/* 3. Code Blocks */
+html:not(.dark) .prose pre {
 	background-color: #f4f4f5 !important; /* zinc-100 */
+	border: 1px solid rgba(0,0,0,0.05);
+	border-radius: 0.75rem;
+}
+html:not(.dark) .prose pre code,
+html:not(.dark) .prose pre span {
 	color: #27272a !important; /* zinc-800 */
+	background-color: transparent !important;
 }
 
-.prose pre code {
+/* Dark Mode: Force light text on dark background */
+html.dark .prose pre {
+	background-color: #18181b !important; /* zinc-900 */
+	border: 1px solid rgba(255,255,255,0.1);
+	border-radius: 0.75rem;
+}
+html.dark .prose pre code,
+html.dark .prose pre span {
+	color: #e4e4e7 !important; /* zinc-200 */
 	background-color: transparent !important;
-	color: inherit !important;
+}
+
+/* General Code Block Styling */
+.prose pre {
+	padding: 1rem;
+	overflow-x: auto;
+}
+.prose pre code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 	font-size: 0.875em;
 }
 
-.dark .prose pre {
-	border: 1px solid rgba(255,255,255,0.1);
-	background-color: #18181b !important; /* zinc-900 */
-	color: #e4e4e7 !important; /* zinc-200 */
-}
-
-.prose blockquote {
+/* 4. Blockquotes */
+html:not(.dark) .prose blockquote {
 	font-style: normal;
 	font-weight: 400;
 	border-left-width: 4px;
-	border-left-color: #e4e4e7; /* (zinc-200) */
-	color: #52525b; /* (zinc-600) */
+	border-left-color: #d4d4d8 !important; /* zinc-300 */
+	color: #52525b !important; /* zinc-600 */
 	background-color: rgba(244, 244, 245, 0.5);
 	padding: 0.5rem 1rem;
 	border-radius: 0 0.5rem 0.5rem 0;
 }
 
-.dark .prose blockquote {
-	border-left-color: #3f3f46; /* (zinc-700) */
-	color: #a1a1aa; /* (zinc-400) */
+html.dark .prose blockquote {
+	font-style: normal;
+	font-weight: 400;
+	border-left-width: 4px;
+	border-left-color: #3f3f46 !important; /* zinc-700 */
+	color: #a1a1aa !important; /* zinc-400 */
 	background-color: rgba(24, 24, 27, 0.5);
+	padding: 0.5rem 1rem;
+	border-radius: 0 0.5rem 0.5rem 0;
 }
 
-.prose :not(pre) > code {
+/* 5. Inline Code */
+html:not(.dark) .prose :not(pre) > code {
 	background-color: rgba(0,0,0,0.05);
-	color: #db2777; /* pink-600 */
+	color: #db2777 !important; /* pink-600 */
 	padding: 0.125rem 0.25rem;
 	border-radius: 0.25rem;
 	font-weight: 600;
 }
-.dark .prose :not(pre) > code {
+html.dark .prose :not(pre) > code {
 	background-color: rgba(255,255,255,0.1);
-	color: #f472b6; /* pink-400 */
+	color: #f472b6 !important; /* pink-400 */
+	padding: 0.125rem 0.25rem;
+	border-radius: 0.25rem;
+	font-weight: 600;
+}
+
+/* 6. Headings & Strong */
+html:not(.dark) .prose h1,
+html:not(.dark) .prose h2,
+html:not(.dark) .prose h3,
+html:not(.dark) .prose h4,
+html:not(.dark) .prose strong {
+	color: #18181b; /* zinc-900 */
+}
+
+html.dark .prose h1,
+html.dark .prose h2,
+html.dark .prose h3,
+html.dark .prose h4,
+html.dark .prose strong {
+	color: #f4f4f5; /* zinc-100 */
 }
 
 /* --- Copy Button Styles --- */
@@ -187,8 +230,8 @@ html.dark::after {
 	align-items: center;
 	gap: 0.25rem;
 }
-.dark .copy-code-btn {
-	background-color: rgba(39, 39, 42, 0.8); /* zinc-800 */
+html.dark .copy-code-btn {
+	background-color: rgba(39, 39, 42, 0.8);
 	color: #a1a1aa;
 	border: 1px solid rgba(255,255,255,0.1);
 }

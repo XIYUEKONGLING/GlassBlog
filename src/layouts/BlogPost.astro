@@ -108,7 +108,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 	</div>
 </div>
 
-<!-- Lightbox Container (Added style="display:none" to prevent FOUC) -->
+<!-- Lightbox Container -->
 <div id="lightbox" style="display: none;">
 	<img id="lightbox-img" src="" alt="Enlarged view" />
 </div>
@@ -116,7 +116,6 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 <Footer />
 
 <script>
-	// --- Code Block Copy & Lightbox Logic ---
 	document.addEventListener('astro:page-load', () => {
 
 		// 1. Copy Code Button
@@ -172,6 +171,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 			lightbox.addEventListener('click', (e) => {
 				if (e.target !== lightboxImg) {
 					lightbox.classList.remove('active');
+					// Wait for animation to finish
 					setTimeout(() => {
 						if(!lightbox.classList.contains('active')) {
 							lightboxImg.src = ''; // Clear src
