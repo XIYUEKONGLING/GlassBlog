@@ -9,7 +9,6 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-
 const isMenuOpen = ref(false);
 
 const toggleMenu = () => {
@@ -51,6 +50,7 @@ onUnmounted(() => {
 
 <template>
   <header class="sticky top-6 z-50 w-full px-4 pointer-events-none">
+    <!-- Main Navbar Container -->
     <nav
         class="group pointer-events-auto mx-auto flex items-center justify-between w-[95%] md:w-full md:max-w-[80%] rounded-full px-6 py-3 shadow-lg backdrop-blur-xl transition-all duration-300 ease-out bg-white/60 border border-white/40 shadow-zinc-200/20 dark:bg-black/40 dark:border-white/10 dark:shadow-zinc-900/20 relative z-[60]"
     >
@@ -62,7 +62,7 @@ onUnmounted(() => {
       </h2>
 
       <!-- Desktop Navigation -->
-      <div class="hidden md:flex gap-2">
+      <div class="hidden md:flex gap-1">
         <a
             v-for="link in links"
             :key="link.href"
@@ -70,7 +70,6 @@ onUnmounted(() => {
             class="nav-link-desktop"
             :class="[isActive(link.href) ? 'active' : 'inactive']"
         >
-          <!-- Desktop Icon: Controlled by showIcon -->
           <i v-if="link.showIcon && link.icon" :class="[link.icon, 'mr-2 opacity-70']"></i>
           {{ link.label }}
         </a>
@@ -90,42 +89,41 @@ onUnmounted(() => {
       </button>
     </nav>
 
-    <!-- Mobile Navigation Overlay -->
-    <transition name="mobile-fade">
-      <div v-if="isMenuOpen" class="fixed inset-0 z-50 md:hidden pointer-events-auto overflow-hidden">
-        <!-- Background Acrylic Layer -->
-        <div class="absolute inset-0 bg-acrylic" @click="closeMenu"></div>
+    <!-- Mobile Drawer System -->
+    <transition name="drawer-fade">
+      <div v-if="isMenuOpen" class="fixed inset-0 z-50 md:hidden pointer-events-auto">
+        <!-- Dimmed Backdrop -->
+        <div class="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm" @click="closeMenu"></div>
 
-        <!-- Content Layer -->
-        <div class="relative h-full flex flex-col items-center justify-center p-6 pointer-events-none">
-          <div class="flex flex-col gap-4 w-full max-w-sm pointer-events-auto">
-            <a
-                v-for="(link, index) in links"
-                :key="link.href"
-                :href="link.href"
-                @click="closeMenu"
-                class="mobile-link group"
-                :class="[isActive(link.href) ? 'active' : 'inactive']"
-                :style="{ transitionDelay: `${100 + index * 50}ms` }"
-            >
-              <div class="flex items-center gap-4">
-                <!-- Mobile Icon: Controlled by showIconMobile -->
-                <div
-                    v-if="link.showIconMobile && link.icon"
-                    class="icon-wrapper"
-                >
-                  <i :class="[link.icon, 'text-lg']"></i>
+        <!-- Slide-in Drawer (Panel Style) -->
+        <div class="absolute right-4 top-24 bottom-4 w-72 max-w-[calc(100vw-2rem)] flex flex-col animate-drawer-slide">
+          <div class="h-full flex flex-col rounded-4xl bg-white/80 dark:bg-zinc-900/80 border border-white/40 dark:border-white/10 shadow-2xl backdrop-blur-2xl overflow-hidden">
+
+            <!-- Drawer Header -->
+            <div class="p-6 border-b border-zinc-200/50 dark:border-white/5">
+              <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest">Navigation</span>
+            </div>
+
+            <!-- Drawer Links -->
+            <div class="grow overflow-y-auto p-4 flex flex-col gap-2">
+              <a
+                  v-for="link in links"
+                  :key="link.href"
+                  :href="link.href"
+                  @click="closeMenu"
+                  class="drawer-link"
+                  :class="[isActive(link.href) ? 'active' : 'inactive']"
+              >
+                <div class="flex items-center gap-3">
+                  <div v-if="link.icon" class="w-8 flex justify-center text-lg opacity-70">
+                    <i :class="link.icon"></i>
+                  </div>
+                  <span class="font-bold text-base">{{ link.label }}</span>
                 </div>
-                <span class="text-xl font-bold tracking-tight">{{ link.label }}</span>
-              </div>
-              <i class="fa-solid fa-chevron-right text-xs opacity-20 group-hover:opacity-100 transition-opacity"></i>
-            </a>
+                <i v-if="isActive(link.href)" class="fa-solid fa-circle text-[6px] text-blue-500"></i>
+              </a>
+            </div>
           </div>
-
-          <!-- Close Button -->
-          <button @click="closeMenu" class="mobile-close-btn">
-            <i class="fa-solid fa-xmark text-xl"></i>
-          </button>
         </div>
       </div>
     </transition>
@@ -135,71 +133,65 @@ onUnmounted(() => {
 <style scoped>
 @reference "../../styles/global.css";
 
+/* --- Desktop Nav Links --- */
 .nav-link-desktop {
-  @apply relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ease-out
-  flex items-center justify-center border border-transparent
-  hover:scale-105 hover:bg-black/5 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white;
+  @apply px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center border border-transparent;
 }
 .nav-link-desktop.active {
-  @apply bg-white/40 text-zinc-900 border-white/40 shadow-sm dark:bg-white/15 dark:text-white dark:border-white/20;
+  @apply bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white border-zinc-200/50 dark:border-white/10;
 }
 .nav-link-desktop.inactive {
-  @apply text-zinc-600 dark:text-zinc-400;
+  @apply text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-white/5;
 }
 
+/* --- Hamburger Icon --- */
 .hamburger-line {
   @apply block h-0.5 bg-current transition-all duration-300 rounded-full;
 }
 
-.mobile-fade-enter-active,
-.mobile-fade-leave-active {
-  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+/* --- Drawer Animations --- */
+.drawer-fade-enter-active,
+.drawer-fade-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.mobile-fade-enter-from,
-.mobile-fade-leave-to {
+.drawer-fade-enter-from,
+.drawer-fade-leave-to {
   opacity: 0;
 }
 
-.bg-acrylic {
-  @apply absolute inset-0 transition-opacity duration-500;
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  background-color: rgba(255, 255, 255, 0.3);
-  will-change: opacity;
+@keyframes drawer-slide {
+  from {
+    transform: translateX(100%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
 }
 
-:global(.dark) .bg-acrylic {
-  background-color: rgba(0, 0, 0, 0.5);
+.animate-drawer-slide {
+  animation: drawer-slide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.mobile-link {
-  @apply flex items-center justify-between px-6 py-5 rounded-4xl border transition-all duration-500 ease-out;
+/* --- Drawer Link Styling --- */
+.drawer-link {
+  @apply flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-200;
 }
 
-.mobile-fade-enter-from .mobile-link {
-  @apply opacity-0 translate-y-8 scale-95;
+.drawer-link.active {
+  @apply bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20;
 }
 
-.mobile-link.active {
-  @apply bg-white/80 dark:bg-white/15 border-white/50 dark:border-white/20 text-blue-600 dark:text-blue-400 shadow-xl;
+.drawer-link.inactive {
+  @apply text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5;
 }
 
-.mobile-link.inactive {
-  @apply bg-white/40 dark:bg-black/40 border-white/20 dark:border-white/5 text-zinc-800 dark:text-zinc-200;
-}
-
-.icon-wrapper {
-  @apply w-10 h-10 rounded-2xl flex items-center justify-center bg-white/50 dark:bg-white/5 border border-white/40 dark:border-white/10;
-}
-
-.mobile-close-btn {
-  @apply mt-12 w-14 h-14 rounded-full bg-white/40 dark:bg-white/10 border border-white/20 dark:border-white/10
-  flex items-center justify-center text-zinc-500 dark:text-zinc-400 pointer-events-auto
-  active:scale-90 transition-all duration-500 delay-300;
-}
-
-.mobile-fade-enter-from .mobile-close-btn {
-  @apply opacity-0 translate-y-4;
+/* Touch Device Optimization */
+@media (hover: none) {
+  .drawer-link:active {
+    @apply bg-zinc-100 dark:bg-white/10;
+  }
 }
 </style>
