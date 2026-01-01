@@ -121,37 +121,39 @@ html.dark::after {
 }
 
 /* 3. Code Blocks */
-html:not(.dark) .prose pre {
-	background-color: #f4f4f5 !important; /* zinc-100 */
-	border: 1px solid rgba(0,0,0,0.05);
-	border-radius: 0.75rem;
-}
-html:not(.dark) .prose pre code,
-html:not(.dark) .prose pre span {
-	color: #27272a !important; /* zinc-800 */
-	background-color: transparent !important;
-}
 
-/* Dark Mode: Force light text on dark background */
-html.dark .prose pre {
-	background-color: #18181b !important; /* zinc-900 */
-	border: 1px solid rgba(255,255,255,0.1);
-	border-radius: 0.75rem;
-}
-html.dark .prose pre code,
-html.dark .prose pre span {
-	color: #e4e4e7 !important; /* zinc-200 */
-	background-color: transparent !important;
-}
-
-/* General Code Block Styling */
 .prose pre {
 	padding: 1rem;
 	overflow-x: auto;
+	border-radius: 0.75rem;
+	border: 1px solid rgba(0,0,0,0.05);
+
+	background-color: var(--shiki-light-bg) !important;
+	color: var(--shiki-light) !important;
 }
+
 .prose pre code {
 	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 	font-size: 0.875em;
+	background-color: transparent !important;
+	color: inherit !important;
+}
+
+html.dark .prose pre {
+	border: 1px solid rgba(255,255,255,0.1);
+	background-color: var(--shiki-dark-bg) !important;
+	color: var(--shiki-dark) !important;
+}
+
+html.dark .prose pre span {
+	color: var(--shiki-dark) !important;
+}
+
+.prose pre code span {
+	color: var(--shiki-light);
+}
+html.dark .prose pre code span {
+	color: var(--shiki-dark);
 }
 
 /* 4. Blockquotes */
@@ -208,6 +210,21 @@ html.dark .prose h3,
 html.dark .prose h4,
 html.dark .prose strong {
 	color: #f4f4f5; /* zinc-100 */
+}
+
+/* 7. Anchor Links (rehype-autolink-headings) */
+.anchor-link {
+	text-decoration: none !important;
+	color: #a1a1aa !important;
+	opacity: 0;
+	margin-left: 0.5rem;
+	transition: opacity 0.2s;
+	border: none !important;
+}
+.prose h1:hover .anchor-link,
+.prose h2:hover .anchor-link,
+.prose h3:hover .anchor-link {
+	opacity: 1;
 }
 
 /* --- Copy Button Styles --- */
