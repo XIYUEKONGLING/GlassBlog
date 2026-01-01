@@ -120,6 +120,8 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
 
 <script>
     document.addEventListener('astro:page-load', () => {
+        if (!window.location.pathname.includes('/archive')) return;
+
         const items = document.querySelectorAll('.archive-item');
         const yearSections = document.querySelectorAll('.year-section');
         const resetBtn = document.getElementById('reset-filter');
@@ -128,7 +130,6 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
         const noResults = document.getElementById('no-results');
         const postCount = document.getElementById('post-count');
 
-        // Use a more robust selector that works even if sidebar is re-rendered
         const getSidebarLinks = () => document.querySelectorAll('.sidebar-filter-link');
 
         function updateUI() {
@@ -138,7 +139,6 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
 
             let visibleCount = 0;
 
-            // 1. Filter Items
             items.forEach(item => {
                 const el = item as HTMLElement;
                 const postCategories = el.dataset.categories?.split(',') || [];
@@ -155,17 +155,27 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
                 }
             });
 
-            // 2. Hide Empty Years
             yearSections.forEach(section => {
-                const visibleItems = (section as HTMLElement).querySelectorAll('.archive-item[style="display: flex;"]');
-                (section as HTMLElement).style.display = visibleItems.length > 0 ? 'block' : 'none';
+                const el = section as HTMLElement;
+                const visibleItems = el.querySelectorAll('.archive-item[style="display: flex;"]');
+                const shouldShow = visibleItems.length > 0;
+
+                if (shouldShow) {
+                    if (el.style.display === 'none') {
+                        el.style.display = 'block';
+
+                        el.classList.remove('animate-fade-in-up');
+                        void el.offsetWidth; // Trigger reflow
+                        el.classList.add('animate-fade-in-up');
+                    }
+                } else {
+                    el.style.display = 'none';
+                }
             });
 
-            // 3. Update Counts
             if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
             if (postCount) postCount.textContent = `${visibleCount} posts found`;
 
-            // 4. Update Filter Panel
             if (activeCategories.length > 0 || activeTags.length > 0) {
                 activeFilterPanel?.classList.remove('hidden');
                 if (filterTagsContainer) {
@@ -185,7 +195,6 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
                 activeFilterPanel?.classList.add('hidden');
             }
 
-            // 5. Highlight Sidebar Links
             getSidebarLinks().forEach(link => {
                 const type = link.getAttribute('data-filter-type');
                 const val = link.getAttribute('data-filter-value');
@@ -238,9 +247,7 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
             updateUI();
         }
 
-        // Attach listeners to sidebar links
         getSidebarLinks().forEach(link => {
-            // Remove old listener to prevent duplicates if re-running
             const newLink = link.cloneNode(true);
             link.parentNode?.replaceChild(newLink, link);
 
@@ -260,7 +267,6 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
 
         window.addEventListener('popstate', updateUI);
 
-        // Initial run
         updateUI();
     });
 </script>
