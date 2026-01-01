@@ -38,9 +38,9 @@ const tags = [...new Set(allPosts.flatMap((post) => post.data.tags || []))].sort
                                                 href={`/archive?category=${encodeURIComponent(category)}`}
                                                 data-filter-type="category"
                                                 data-filter-value={category}
-                                                class="sidebar-filter-link group flex justify-between items-center px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                                class="sidebar-filter-link group flex justify-between items-center px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-zinc-600 dark:text-zinc-300"
                                         >
-                                        <span class="text-zinc-600 dark:text-zinc-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                        <span class="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                             {category}
                                         </span>
                                             <span class="text-xs bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-zinc-500 dark:text-zinc-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-300">
@@ -95,9 +95,9 @@ const tags = [...new Set(allPosts.flatMap((post) => post.data.tags || []))].sort
                                             href={`/archive?category=${encodeURIComponent(category)}`}
                                             data-filter-type="category"
                                             data-filter-value={category}
-                                            class="sidebar-filter-link group flex justify-between items-center px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                            class="sidebar-filter-link group flex justify-between items-center px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-zinc-600 dark:text-zinc-300"
                                     >
-                                    <span class="text-zinc-600 dark:text-zinc-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                    <span class="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                         {category}
                                     </span>
                                         <span class="text-xs bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-zinc-500 dark:text-zinc-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-300">
