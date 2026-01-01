@@ -1,6 +1,15 @@
 // Place any global data in this file.
 // You can import this data from anywhere in your site by using the `import` keyword.
 
+export interface Project {
+    title: string;
+    description?: string;
+    url: string;
+    logo: {
+        type: 'icon' | 'image' | 'text';
+        value: string;
+    };
+}
 
 // Website Settings
 export const SITE_TITLE = "Glass Blog";
@@ -35,4 +44,26 @@ export const SOCIAL_LINKS: { icon: string; url: string; label: string }[] = [
     { icon: "fa-brands fa-github", url: "https://github.com/XIYUEKONGLING/", label: "GitHub" },
     { icon: "fa-brands fa-twitter", url: "https://x.com/XiYueKongLing/", label: "Twitter" },
     { icon: "fa-solid fa-rss", url: "/rss.xml", label: "RSS" },
+];
+
+
+export const PROJECTS: Project[] = [
+    {
+        title: "Glass Blog",
+        description: "A modern, minimalist blog theme built with Astro 5 and Tailwind CSS 4.",
+        url: "https://github.com/XIYUEKONGLING/GlassBlog",
+        logo: {
+            type: 'icon',
+            value: 'fa-solid fa-ice-cream'
+        }
+    },
+    {
+        title: "Project Example",
+        description: "An example project showcasing the image logo type.",
+        url: "#",
+        logo: {
+            type: 'text',
+            value: 'PT'
+        }
+    }
 ];

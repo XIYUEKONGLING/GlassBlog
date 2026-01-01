@@ -2,19 +2,21 @@
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { SITE_DESCRIPTION, SITE_TITLE, PROJECTS } from '../consts';
 import Panel from "../components/Panel.astro";
 import Sidebar from "../components/Sidebar.astro";
+import ProjectCard from "../components/ProjectCard.astro";
 import { getEntry, render } from 'astro:content';
-import {SITE_LANGUAGE} from "../consts.ts";
+import { SITE_LANGUAGE } from "../consts.ts";
 
 const entry = await getEntry('spec', 'home');
 
 if (!entry) {
-	throw new Error('Could not find src/content/spec/home.md. Please ensure the file exists.');
+	throw new Error('Could not find src/content/spec/home.md');
 }
 
 const { Content } = await render(entry);
+const hasProjects = PROJECTS && PROJECTS.length > 0;
 ---
 
 <!DOCTYPE HTML>
@@ -35,13 +37,33 @@ const { Content } = await render(entry);
 			</div>
 
 			<!-- Right Content -->
-			<div class="lg:w-3/4">
+			<div class="lg:w-3/4 flex flex-col gap-8"> <!-- Added gap-8 and flex-col -->
 				<Panel>
 					<main class="prose dark:prose-invert max-w-none">
 						<h1>{entry.data.title}</h1>
 						<Content />
 					</main>
 				</Panel>
+
+				<!-- Projects Section -->
+				{hasProjects && (
+					<section class="space-y-6 animate-fade-in-up">
+						<div class="flex items-center gap-3 px-4">
+							<i class="fa-solid fa-rocket text-zinc-400"></i>
+							<h2 class="text-xl font-bold text-zinc-800 dark:text-zinc-100 uppercase tracking-wider">Projects</h2>
+							<div class="grow h-px bg-zinc-200 dark:bg-white/10"></div>
+						</div>
+
+						<div class:list={[
+							"grid gap-6",
+							PROJECTS.length > 1 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
+						]}>
+							{PROJECTS.map((project) => (
+								<ProjectCard project={project} />
+							))}
+						</div>
+					</section>
+				)}
 			</div>
 		</div>
 	</div>
