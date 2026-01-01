@@ -6,6 +6,7 @@ import Header from '../components/Header.astro';
 import Panel from "../components/Panel.astro";
 import Sidebar from "../components/Sidebar.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import {SITE_LANGUAGE} from "../consts.ts";
 
 const posts = (await getCollection('blog')).sort(
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
@@ -22,7 +23,7 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
 ---
 
 <!DOCTYPE HTML>
-<html lang="en">
+<html lang={SITE_LANGUAGE}>
 <head>
     <BaseHead title={"Archive - " + SITE_TITLE} description={SITE_DESCRIPTION} />
 </head>

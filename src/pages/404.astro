@@ -4,10 +4,11 @@ import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import Panel from "../components/Panel.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import {SITE_LANGUAGE} from "../consts.ts";
 ---
 
-<!doctype html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html lang={SITE_LANGUAGE}>
 <head>
     <BaseHead title={`404 - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 </head>

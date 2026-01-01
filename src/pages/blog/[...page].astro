@@ -9,6 +9,7 @@ import Sidebar from "../../components/Sidebar.astro";
 import FormattedDate from '../../components/FormattedDate.astro';
 import {SITE_DESCRIPTION, SITE_PAGESIZE, SITE_TITLE} from '../../consts';
 import type { Page } from 'astro';
+import {SITE_LANGUAGE} from "../../consts.ts";
 
 export async function getStaticPaths({ paginate }: { paginate: any }) {
 	const posts = (await getCollection('blog')).sort(
@@ -22,8 +23,8 @@ const posts = page.data;
 const allPosts = await getCollection('blog');
 ---
 
-<!doctype html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html lang={SITE_LANGUAGE}>
 <head>
 	<BaseHead title={"Blog - " + SITE_TITLE} description={SITE_DESCRIPTION} />
 </head>

@@ -9,6 +9,8 @@ export const SITE_AUTHOR = "XIYUEKONGLING";
 
 export const SITE_PAGESIZE = 6;
 
+export const SITE_LANGUAGE = "en";
+
 // License Settings
 export const SITE_LICENSE = "CC BY-NC-SA 4.0";
 export const SITE_LICENSE_URL = "https://creativecommons.org/licenses/by-nc-sa/4.0/";
