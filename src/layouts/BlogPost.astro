@@ -108,8 +108,8 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 	</div>
 </div>
 
-<!-- Lightbox Container -->
-<div id="lightbox">
+<!-- Lightbox Container (Added style="display:none" to prevent FOUC) -->
+<div id="lightbox" style="display: none;">
 	<img id="lightbox-img" src="" alt="Enlarged view" />
 </div>
 
@@ -125,9 +125,15 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 			// Check if button already exists (client router navigation)
 			if (pre.querySelector('.copy-code-btn')) return;
 
+			// Make pre relative so button positions correctly
+			if (getComputedStyle(pre).position === 'static') {
+				pre.style.position = 'relative';
+			}
+
 			const button = document.createElement('button');
 			button.className = 'copy-code-btn';
-			button.innerHTML = '<i class="fa-regular fa-copy"></i>'; // Copy
+			button.innerHTML = '<i class="fa-regular fa-copy"></i>'; // Icon only initially
+			button.setAttribute('aria-label', 'Copy code');
 
 			button.addEventListener('click', async () => {
 				const code = pre.querySelector('code')?.innerText;
@@ -135,13 +141,15 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 
 				try {
 					await navigator.clipboard.writeText(code);
-					button.innerHTML = '<i class="fa-solid fa-check"></i>';// Copied!
+					button.innerHTML = '<i class="fa-solid fa-check"></i>'; // Check icon
+					button.classList.add('text-green-500');
 					setTimeout(() => {
-						button.innerHTML = '<i class="fa-regular fa-copy"></i>'; // Copy
+						button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+						button.classList.remove('text-green-500');
 					}, 2000);
 				} catch (err) {
 					console.error('Failed to copy:', err);
-					button.innerHTML = 'Error';
+					button.innerHTML = '<i class="fa-solid fa-xmark"></i>';
 				}
 			});
 
@@ -164,6 +172,11 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 			lightbox.addEventListener('click', (e) => {
 				if (e.target !== lightboxImg) {
 					lightbox.classList.remove('active');
+					setTimeout(() => {
+						if(!lightbox.classList.contains('active')) {
+							lightboxImg.src = ''; // Clear src
+						}
+					}, 300);
 				}
 			});
 		}

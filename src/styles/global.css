@@ -31,7 +31,6 @@ html {
 	min-height: 100vh;
 	position: relative;
 	z-index: 0;
-
 	scroll-behavior: smooth;
 	scroll-padding-top: 100px;
 }
@@ -85,23 +84,24 @@ html.dark::after {
 	animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Markdown Customization */
+/* --- Markdown Customization --- */
 .prose {
 	max-width: 100%;
 	margin-left: auto;
 	margin-right: auto;
 }
+
 .prose img {
 	border-radius: 0.75rem;
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 	cursor: zoom-in;
 	transition: transform 0.3s ease;
+	margin: 2rem auto;
 }
 .prose img:hover {
 	transform: scale(1.01);
 }
 
-/* Links */
 .prose a {
 	text-decoration: none;
 	color: #2563eb;
@@ -118,19 +118,123 @@ html.dark::after {
 	border-bottom-color: #60a5fa;
 }
 
-/* Code Blocks */
 .prose pre {
 	border-radius: 0.75rem;
 	padding: 1rem;
 	border: 1px solid rgba(0,0,0,0.05);
-	background-color: #f4f4f5 !important;
-}
-.dark .prose pre {
-	border: 1px solid rgba(255,255,255,0.1);
-	background-color: #18181b !important;
+	background-color: #f4f4f5 !important; /* zinc-100 */
+	color: #27272a !important; /* zinc-800 */
 }
 
-/* Custom Scrollbar for Panels */
+.prose pre code {
+	background-color: transparent !important;
+	color: inherit !important;
+	font-size: 0.875em;
+}
+
+.dark .prose pre {
+	border: 1px solid rgba(255,255,255,0.1);
+	background-color: #18181b !important; /* zinc-900 */
+	color: #e4e4e7 !important; /* zinc-200 */
+}
+
+.prose blockquote {
+	font-style: normal;
+	font-weight: 400;
+	border-left-width: 4px;
+	border-left-color: #e4e4e7; /* (zinc-200) */
+	color: #52525b; /* (zinc-600) */
+	background-color: rgba(244, 244, 245, 0.5);
+	padding: 0.5rem 1rem;
+	border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.dark .prose blockquote {
+	border-left-color: #3f3f46; /* (zinc-700) */
+	color: #a1a1aa; /* (zinc-400) */
+	background-color: rgba(24, 24, 27, 0.5);
+}
+
+.prose :not(pre) > code {
+	background-color: rgba(0,0,0,0.05);
+	color: #db2777; /* pink-600 */
+	padding: 0.125rem 0.25rem;
+	border-radius: 0.25rem;
+	font-weight: 600;
+}
+.dark .prose :not(pre) > code {
+	background-color: rgba(255,255,255,0.1);
+	color: #f472b6; /* pink-400 */
+}
+
+/* --- Copy Button Styles --- */
+.copy-code-btn {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	padding: 0.25rem 0.5rem;
+	font-size: 0.75rem;
+	line-height: 1rem;
+	border-radius: 0.375rem;
+	background-color: rgba(255,255,255,0.8);
+	color: #52525b;
+	border: 1px solid rgba(0,0,0,0.1);
+	cursor: pointer;
+	opacity: 0;
+	transition: all 0.2s;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+.dark .copy-code-btn {
+	background-color: rgba(39, 39, 42, 0.8); /* zinc-800 */
+	color: #a1a1aa;
+	border: 1px solid rgba(255,255,255,0.1);
+}
+.prose pre:hover .copy-code-btn {
+	opacity: 1;
+}
+.copy-code-btn:hover {
+	background-color: #3b82f6;
+	color: white;
+	border-color: #3b82f6;
+}
+
+/* --- Lightbox (Zoom) --- */
+#lightbox {
+	display: none;
+	position: fixed;
+	top: 0; left: 0; width: 100%; height: 100%;
+	background: rgba(0, 0, 0, 0.85);
+	backdrop-filter: blur(5px);
+	z-index: 9999;
+	justify-content: center;
+	align-items: center;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+#lightbox.active {
+	display: flex;
+	opacity: 1;
+}
+
+#lightbox img {
+	max-width: 90vw;
+	max-height: 90vh;
+	border-radius: 4px;
+	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+	transform: scale(0.95);
+	transition: transform 0.3s ease;
+	object-fit: contain;
+}
+
+#lightbox.active img {
+	transform: scale(1);
+}
+
+/* --- Custom Scrollbar for Panels --- */
 .custom-scrollbar {
 	scrollbar-width: thin;
 	scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
