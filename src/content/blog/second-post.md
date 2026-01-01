@@ -1,17 +1,14 @@
 ---
-title: 'Second post'
-description: 'Lorem ipsum dolor sit amet'
+title: 'The Future of Web Development'
+description: 'Reflecting on the shift towards component-based architectures.'
 pubDate: 'Jul 15 2022'
 heroImage: '../../assets/blog-placeholder-4.jpg'
 tags:
-  - Update
   - Thoughts
-  - Reflection
-  - Blogging
+  - Trends
+  - Architecture
 categories:
-  - Posts
-  - Thoughts
-  - Updates
+  - Programming
 ---
 
 

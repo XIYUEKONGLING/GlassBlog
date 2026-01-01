@@ -1,17 +1,13 @@
 ---
-title: 'First post'
-description: 'Lorem ipsum dolor sit amet'
+title: 'Welcome to Glass Blog'
+description: 'An introduction to my personal space on the web.'
 pubDate: 'Jul 08 2022'
 heroImage: '../../assets/blog-placeholder-3.jpg'
 tags:
-  - First
-  - Life
-  - Personal
   - Introduction
+  - Meta
 categories:
-  - Posts
-  - Life
-  - Personal
+  - General
 ---
 
 
