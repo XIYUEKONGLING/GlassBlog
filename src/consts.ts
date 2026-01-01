@@ -58,7 +58,7 @@ export const PROJECTS: Project[] = [
             "Built with Astro 5 and Tailwind CSS 4.",
             "Featuring sleek glassmorphism design."
         ],
-        url: "#",
+        url: "https://github.com/XIYUEKONGLING/GlassBlog",
         logo: { type: 'icon', value: 'fa-solid fa-ice-cream' },
         span: 'tall'
     },
