@@ -6,108 +6,113 @@ import { SITE_TITLE } from '../consts';
 <header class="sticky top-6 z-50 w-full px-4 pointer-events-none">
 	<nav
 		id="nav-container"
-		class="group pointer-events-auto mx-auto flex flex-col 
+		class="group pointer-events-auto mx-auto flex items-center justify-between
                w-[95%] md:w-full md:max-w-[80%]
-               rounded-[40px] md:rounded-full data-[state=open]:rounded-[40px]
+               rounded-full
                px-6 py-3
                shadow-lg 
                backdrop-blur-[20px] backdrop-saturate-150
-               transition-all duration-500 ease-out
-               overflow-hidden
-               
+               transition-all duration-300 ease-out
                bg-white/60 border border-white/40 shadow-zinc-200/20
                dark:bg-black/40 dark:border-white/10 dark:shadow-zinc-900/20
-               
-               h-18
-               data-[state=open]:h-auto"
+               relative z-50"
 	>
-		<!-- Top Row: Logo & Menu Button -->
-		<div class="flex items-center justify-between w-full h-12 shrink-0">
-			<!-- Logo -->
-			<h2 class="text-lg font-bold tracking-tight drop-shadow-sm transition-colors
-                       text-zinc-800 dark:text-zinc-100">
-				<a href="/" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-					{SITE_TITLE}
-				</a>
-			</h2>
+		<!-- Logo -->
+		<h2 class="text-lg font-bold tracking-tight drop-shadow-sm transition-colors text-zinc-800 dark:text-zinc-100 shrink-0">
+			<a href="/" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+				{SITE_TITLE}
+			</a>
+		</h2>
 
-			<!-- Desktop Navigation -->
-			<div class="hidden md:flex gap-2">
-				<HeaderButton href="/">Home</HeaderButton>
-				<HeaderButton href="/blog">Blog</HeaderButton>
-				<HeaderButton href="/archive">Archive</HeaderButton>
-				<HeaderButton href="/about">About</HeaderButton>
-			</div>
-
-			<!-- Mobile Menu Button -->
-			<button
-				id="menu-btn"
-				class="block md:hidden p-2 -mr-2 rounded-full 
-                       focus:outline-none transition-all duration-200
-                       text-zinc-800 hover:bg-black/5 active:scale-95
-                       dark:text-zinc-100 dark:hover:bg-white/10"
-				aria-label="Toggle Menu"
-			>
-				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-				</svg>
-			</button>
+		<!-- Desktop Navigation -->
+		<div class="hidden md:flex gap-2">
+			<HeaderButton href="/">Home</HeaderButton>
+			<HeaderButton href="/blog">Blog</HeaderButton>
+			<HeaderButton href="/archive">Archive</HeaderButton>
+			<HeaderButton href="/about">About</HeaderButton>
 		</div>
 
-		<!-- Mobile Navigation Menu -->
-		<div
-			class="md:hidden flex flex-col gap-2 pt-4 pb-2
-                   opacity-0 pointer-events-none
-                   transition-opacity duration-300
-                   data-[visible=true]:opacity-100 data-[visible=true]:pointer-events-auto"
-			id="mobile-menu"
+		<!-- Mobile Menu Toggle -->
+		<button
+			id="menu-btn"
+			class="block md:hidden p-2 -mr-2 rounded-full 
+                   focus:outline-none transition-all duration-200
+                   text-zinc-800 hover:bg-black/5 active:scale-95
+                   dark:text-zinc-100 dark:hover:bg-white/10 z-50 relative"
+			aria-label="Toggle Menu"
 		>
-			<HeaderButton href="/" class="w-full text-center justify-center">Home</HeaderButton>
-			<HeaderButton href="/blog" class="w-full text-center justify-center">Blog</HeaderButton>
-			<HeaderButton href="/archive" class="w-full text-center justify-center">Archive</HeaderButton>
-			<HeaderButton href="/about" class="w-full text-center justify-center">About</HeaderButton>
-		</div>
+			<div class="w-6 h-6 flex flex-col justify-center gap-1.5">
+				<span class="block w-full h-0.5 bg-current transition-transform duration-300 origin-center" id="hamburger-top"></span>
+				<span class="block w-full h-0.5 bg-current transition-opacity duration-300" id="hamburger-middle"></span>
+				<span class="block w-full h-0.5 bg-current transition-transform duration-300 origin-center" id="hamburger-bottom"></span>
+			</div>
+		</button>
 	</nav>
+
+	<!-- Mobile Navigation Overlay -->
+	<div
+		id="mobile-menu-overlay"
+		class="fixed inset-0 z-40 bg-white/90 dark:bg-black/90 backdrop-blur-xl 
+               flex flex-col items-center justify-center gap-6
+               opacity-0 pointer-events-none transition-all duration-300
+               md:hidden"
+	>
+		<div class="flex flex-col gap-4 w-full max-w-xs text-center">
+			<HeaderButton href="/" class="text-xl py-3 w-full justify-center">Home</HeaderButton>
+			<HeaderButton href="/blog" class="text-xl py-3 w-full justify-center">Blog</HeaderButton>
+			<HeaderButton href="/archive" class="text-xl py-3 w-full justify-center">Archive</HeaderButton>
+			<HeaderButton href="/about" class="text-xl py-3 w-full justify-center">About</HeaderButton>
+		</div>
+	</div>
 </header>
 
 <script>
 	function initMenu() {
 		const menuBtn = document.getElementById('menu-btn');
-		const navContainer = document.getElementById('nav-container');
-		const mobileMenu = document.getElementById('mobile-menu');
+		const overlay = document.getElementById('mobile-menu-overlay');
+		const topBar = document.getElementById('hamburger-top');
+		const midBar = document.getElementById('hamburger-middle');
+		const botBar = document.getElementById('hamburger-bottom');
+		let isOpen = false;
 
-		// Reset state on initialization
-		navContainer?.setAttribute('data-state', 'closed');
-		mobileMenu?.setAttribute('data-visible', 'false');
+		const toggleMenu = () => {
+			isOpen = !isOpen;
 
-		const toggleMenu = (e: Event) => {
-			e.stopPropagation();
-			const isOpen = navContainer?.getAttribute('data-state') === 'open';
 			if (isOpen) {
-				navContainer?.setAttribute('data-state', 'closed');
-				mobileMenu?.setAttribute('data-visible', 'false');
+				// Show Overlay
+				overlay?.classList.remove('opacity-0', 'pointer-events-none');
+				overlay?.classList.add('opacity-100', 'pointer-events-auto');
+				document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+				// Animate Icon to X
+				topBar?.classList.add('rotate-45', 'translate-y-2');
+				midBar?.classList.add('opacity-0');
+				botBar?.classList.add('-rotate-45', '-translate-y-2');
 			} else {
-				navContainer?.setAttribute('data-state', 'open');
-				mobileMenu?.setAttribute('data-visible', 'true');
+				// Hide Overlay
+				overlay?.classList.add('opacity-0', 'pointer-events-none');
+				overlay?.classList.remove('opacity-100', 'pointer-events-auto');
+				document.body.style.overflow = '';
+
+				// Animate Icon back
+				topBar?.classList.remove('rotate-45', 'translate-y-2');
+				midBar?.classList.remove('opacity-0');
+				botBar?.classList.remove('-rotate-45', '-translate-y-2');
 			}
 		};
 
-		const closeMenu = (e: Event) => {
-			if (navContainer && !navContainer.contains(e.target as Node)) {
-				navContainer.setAttribute('data-state', 'closed');
-				mobileMenu?.setAttribute('data-visible', 'false');
-			}
-		};
+		menuBtn?.addEventListener('click', (e) => {
+			e.stopPropagation();
+			toggleMenu();
+		});
 
-		// Remove old listeners to prevent duplicates if any (though page-load usually implies fresh DOM)
-		menuBtn?.removeEventListener('click', toggleMenu);
-		document.removeEventListener('click', closeMenu);
-
-		// Add listeners
-		menuBtn?.addEventListener('click', toggleMenu);
-		document.addEventListener('click', closeMenu);
+		// Close on link click
+		overlay?.querySelectorAll('a').forEach(link => {
+			link.addEventListener('click', () => {
+				if(isOpen) toggleMenu();
+			});
+		});
 	}
 
-	// Run on every page navigation
 	document.addEventListener('astro:page-load', initMenu);
 </script>

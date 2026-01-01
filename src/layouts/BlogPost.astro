@@ -34,7 +34,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 			<aside class="lg:w-1/4 min-w-0">
 				<Sidebar hasToc={showToc}>
 					{showToc && (
-						<Panel class="p-5! max-h-[60vh] overflow-y-auto custom-scrollbar">
+						<Panel class="p-5! max-h-[calc(100vh-10rem)] overflow-y-auto custom-scrollbar">
 							<TableOfContents headings={headings} />
 						</Panel>
 					)}
@@ -43,7 +43,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 
 			<!-- Main Content -->
 			<article class="w-full lg:w-3/4 min-w-0">
-				<Panel>
+				<Panel class="px-6 py-8 md:px-10 md:py-12">
 					{/* Hero Image */}
 					<div class="w-full mb-8">
 						{heroImage ? (
@@ -82,7 +82,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 					</div>
 
 					{/* Content */}
-					<div class="prose dark:prose-invert max-w-none prose-img:rounded-xl">
+					<div class="prose dark:prose-invert max-w-none prose-lg">
 						<slot />
 					</div>
 
@@ -107,6 +107,67 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 		</div>
 	</div>
 </div>
+
+<!-- Lightbox Container -->
+<div id="lightbox">
+	<img id="lightbox-img" src="" alt="Enlarged view" />
+</div>
+
 <Footer />
+
+<script>
+	// --- Code Block Copy & Lightbox Logic ---
+	document.addEventListener('astro:page-load', () => {
+
+		// 1. Copy Code Button
+		const codeBlocks = document.querySelectorAll('pre');
+		codeBlocks.forEach((pre) => {
+			// Check if button already exists (client router navigation)
+			if (pre.querySelector('.copy-code-btn')) return;
+
+			const button = document.createElement('button');
+			button.className = 'copy-code-btn';
+			button.innerHTML = '<i class="fa-regular fa-copy"></i>'; // Copy
+
+			button.addEventListener('click', async () => {
+				const code = pre.querySelector('code')?.innerText;
+				if (!code) return;
+
+				try {
+					await navigator.clipboard.writeText(code);
+					button.innerHTML = '<i class="fa-solid fa-check"></i>';// Copied!
+					setTimeout(() => {
+						button.innerHTML = '<i class="fa-regular fa-copy"></i>'; // Copy
+					}, 2000);
+				} catch (err) {
+					console.error('Failed to copy:', err);
+					button.innerHTML = 'Error';
+				}
+			});
+
+			pre.appendChild(button);
+		});
+
+		// 2. Image Lightbox
+		const images = document.querySelectorAll('.prose img');
+		const lightbox = document.getElementById('lightbox');
+		const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
+
+		if (lightbox && lightboxImg) {
+			images.forEach((img) => {
+				img.addEventListener('click', () => {
+					lightboxImg.src = (img as HTMLImageElement).src;
+					lightbox.classList.add('active');
+				});
+			});
+
+			lightbox.addEventListener('click', (e) => {
+				if (e.target !== lightboxImg) {
+					lightbox.classList.remove('active');
+				}
+			});
+		}
+	});
+</script>
 </body>
 </html>
