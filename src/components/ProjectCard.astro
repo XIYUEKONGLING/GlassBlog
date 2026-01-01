@@ -1,7 +1,6 @@
 ---
 import type { Project } from '../consts';
 import Panel from './Panel.astro';
-import { Image } from 'astro:assets';
 
 interface Props {
     project: Project;
@@ -10,17 +9,22 @@ interface Props {
 const { project } = Astro.props;
 ---
 
-<a href={project.url} target="_blank" rel="noopener noreferrer" class="group block no-underline">
-    <Panel class="h-full transition-all duration-300 group-hover:scale-[1.02] group-hover:border-blue-500/50 group-hover:shadow-blue-500/10 p-6! flex items-start gap-5">
+<a
+        href={project.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group block no-underline h-full"
+>
+    <Panel class="h-full p-6! flex items-start gap-5 transition-[border-color,background-color,shadow] duration-300 hover:border-blue-500/50 hover:bg-white/70 dark:hover:bg-black/50">
 
-        <!-- Logo Container -->
-        <div class="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 group-hover:border-blue-400/50 transition-colors">
+        <!-- Logo -->
+        <div class="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center bg-zinc-100/50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 group-hover:border-blue-400/50 transition-colors">
             {project.logo.type === 'icon' && (
-                    <i class:list={[project.logo.value, "text-2xl text-zinc-600 dark:text-zinc-300 group-hover:text-blue-500 transition-colors"]}></i>
+                    <i class:list={[project.logo.value, "text-2xl text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors"]}></i>
             )}
 
             {project.logo.type === 'text' && (
-                    <span class="text-xl font-bold text-zinc-600 dark:text-zinc-300 group-hover:text-blue-500 transition-colors">
+                    <span class="text-xl font-bold text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors">
           {project.logo.value}
         </span>
             )}
@@ -42,9 +46,9 @@ const { project } = Astro.props;
             )}
         </div>
 
-        <!-- Arrow Icon -->
-        <div class="shrink-0 self-center opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
-            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-blue-500"></i>
+        <!-- Arrow Indicator -->
+        <div class="shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="fa-solid fa-chevron-right text-xs text-blue-500"></i>
         </div>
     </Panel>
 </a>
