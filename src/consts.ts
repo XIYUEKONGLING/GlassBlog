@@ -13,6 +13,19 @@ export interface Project {
     span?: 'normal' | 'tall' | 'wide' | 'full';
 }
 
+export interface NavLink {
+    href: string;
+    label: string;
+    icon?: string;
+    showIcon?: boolean;
+}
+
+export const NAV_LINKS: NavLink[] = [
+    { href: '/', label: 'Home', icon: 'fa-solid fa-house', showIcon: false },
+    { href: '/blog', label: 'Blog', icon: 'fa-solid fa-pen-nib', showIcon: false },
+    { href: '/archive', label: 'Archive', icon: 'fa-solid fa-box-archive', showIcon: false },
+    { href: '/about', label: 'About', icon: 'fa-solid fa-user', showIcon: false },
+];
 
 // Website Settings
 export const SITE_TITLE = "Glass Blog";
