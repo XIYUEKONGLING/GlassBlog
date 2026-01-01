@@ -6,7 +6,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import type { ImageMetadata } from 'astro';
 import FallbackImage from '../assets/blog-placeholder-1.jpg';
 import { SITE_TITLE } from '../consts';
-import Scrollbar from './Scrollbar.astro';
+import CustomScrollbar from './vue/CustomScrollbar.vue';
 import { ClientRouter } from 'astro:transitions';
 
 interface Props {
@@ -79,4 +79,4 @@ const { title, description, image = FallbackImage } = Astro.props;
 <ClientRouter />
 
 <!-- Custom Scrollbar -->
-<Scrollbar />
+<CustomScrollbar client:load />
