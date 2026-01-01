@@ -32,7 +32,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 
 			<!-- Left Sidebar: Profile + TOC -->
 			<aside class="lg:w-1/4 min-w-0">
-				<Sidebar>
+				<Sidebar hasToc={showToc}>
 					{showToc && (
 						<Panel class="p-5! max-h-[60vh] overflow-y-auto custom-scrollbar">
 							<TableOfContents headings={headings} />
