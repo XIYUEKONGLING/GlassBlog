@@ -6,7 +6,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const currentTime = ref('');
+const currentTime = ref('--:--');
 const utcOffset = ref('');
 
 const updateTime = () => {
@@ -30,7 +30,8 @@ const updateTime = () => {
       utcOffset.value = tzName.replace('GMT', 'UTC');
     }
   } catch (e) {
-    currentTime.value = 'Error';
+    console.error("Failed to update time:", e);
+    currentTime.value = "Error";
   }
 };
 
@@ -42,7 +43,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  clearInterval(timer);
+  if (timer) clearInterval(timer);
 });
 </script>
 

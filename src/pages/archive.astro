@@ -34,7 +34,7 @@ const posts = (await getCollection('blog')).sort(
                             <i class="fa-solid fa-box-archive text-zinc-400"></i>
                             Archive
                         </h1>
-                        <span class="text-zinc-500 text-sm">{posts.length} posts</span>
+                        <span class="text-zinc-500 text-sm">{posts.length} posts total</span>
                     </div>
 
                     <ArchiveManager client:load posts={posts} />

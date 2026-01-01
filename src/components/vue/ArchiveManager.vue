@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -8,56 +8,65 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const activeCategory = ref<string | null>(null);
-const activeTag = ref<string | null>(null);
+const activeCategories = ref<string[]>([]);
+const activeTags = ref<string[]>([]);
 
-// Initialize filters from URL
-onMounted(() => {
+const syncFromURL = () => {
   const params = new URLSearchParams(window.location.search);
-  activeCategory.value = params.get('category');
-  activeTag.value = params.get('tag');
-
-  window.addEventListener('popstate', () => {
-    const p = new URLSearchParams(window.location.search);
-    activeCategory.value = p.get('category');
-    activeTag.value = p.get('tag');
-  });
-});
+  activeCategories.value = params.getAll('category');
+  activeTags.value = params.getAll('tag');
+};
 
 const updateURL = () => {
   const params = new URLSearchParams();
-  if (activeCategory.value) params.set('category', activeCategory.value);
-  if (activeTag.value) params.set('tag', activeTag.value);
+  activeCategories.value.forEach(cat => params.append('category', cat));
+  activeTags.value.forEach(tag => params.append('tag', tag));
 
-  const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+  const query = params.toString() ? '?' + params.toString() : '';
+  const newUrl = `${window.location.pathname}${query}`;
   window.history.pushState(null, '', newUrl);
 };
 
-const toggleCategory = (cat: string) => {
-  activeCategory.value = activeCategory.value === cat ? null : cat;
+const removeFilter = (type: 'category' | 'tag', value: string) => {
+  if (type === 'category') {
+    activeCategories.value = activeCategories.value.filter(v => v !== value);
+  } else {
+    activeTags.value = activeTags.value.filter(v => v !== value);
+  }
   updateURL();
 };
 
-const toggleTag = (tag: string) => {
-  activeTag.value = activeTag.value === tag ? null : tag;
+const clearAll = () => {
+  activeCategories.value = [];
+  activeTags.value = [];
   updateURL();
 };
 
-const clearFilters = () => {
-  activeCategory.value = null;
-  activeTag.value = null;
-  updateURL();
-};
+onMounted(() => {
+  syncFromURL();
+  window.addEventListener('popstate', syncFromURL);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', syncFromURL);
+});
 
 const filteredPosts = computed(() => {
   return props.posts.filter(post => {
-    const matchCat = !activeCategory.value || post.data.categories?.includes(activeCategory.value);
-    const matchTag = !activeTag.value || post.data.tags?.includes(activeTag.value);
-    return matchCat && matchTag;
+    const postCats = post.data.categories || [];
+    const postTags = post.data.tags || [];
+
+    const matchesCats = activeCategories.value.length === 0 ||
+        activeCategories.value.every(cat => postCats.includes(cat));
+
+    const matchesTags = activeTags.value.length === 0 ||
+        activeTags.value.every(tag => postTags.includes(tag));
+
+    return matchesCats && matchesTags;
   });
 });
 
-const postsByYear = computed(() => {
+const groupedPosts = computed(() => {
   const groups: Record<number, CollectionEntry<'blog'>[]> = {};
   filteredPosts.value.forEach(post => {
     const year = new Date(post.data.pubDate).getFullYear();
@@ -72,41 +81,59 @@ const postsByYear = computed(() => {
 
 <template>
   <div>
-    <!-- Active Filter Panel -->
-    <Transition name="fade">
-      <div v-if="activeCategory || activeTag" class="mb-8 flex flex-wrap gap-3 items-center">
-        <span class="text-sm font-bold text-zinc-500 uppercase tracking-widest">Active Filters:</span>
-        <button v-if="activeCategory" @click="activeCategory = null; updateURL()"
-                class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold flex items-center gap-2 transition-all hover:bg-red-100">
-          {{ activeCategory }} <i class="fa-solid fa-xmark"></i>
-        </button>
-        <button v-if="activeTag" @click="activeTag = null; updateURL()"
-                class="px-3 py-1 bg-zinc-100 dark:bg-white/10 text-zinc-500 dark:text-zinc-400 rounded-full text-xs font-bold flex items-center gap-2 transition-all hover:bg-red-100">
-          #{{ activeTag }} <i class="fa-solid fa-xmark"></i>
-        </button>
-        <button @click="clearFilters" class="text-xs text-zinc-400 hover:text-blue-500 underline">Clear All</button>
-      </div>
-    </Transition>
+    <!-- Active Filters Display -->
+    <div v-if="activeCategories.length > 0 || activeTags.length > 0" class="mb-8 flex flex-wrap gap-2 items-center">
+      <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest mr-2">Active Filters:</span>
 
-    <div v-if="postsByYear.length > 0" class="space-y-12">
-      <section v-for="group in postsByYear" :key="group.year" class="relative">
-        <h2 class="text-2xl font-bold text-zinc-300 dark:text-white/20 mb-6 border-l-4 border-blue-500/50 pl-4">
+      <button v-for="cat in activeCategories" :key="'cat-'+cat"
+              @click="removeFilter('category', cat)"
+              class="flex items-center gap-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md text-xs font-bold hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+      >
+        {{ cat }} <i class="fa-solid fa-xmark opacity-50"></i>
+      </button>
+
+      <button v-for="tag in activeTags" :key="'tag-'+tag"
+              @click="removeFilter('tag', tag)"
+              class="flex items-center gap-2 px-2 py-1 bg-zinc-100 dark:bg-white/10 text-zinc-500 dark:text-zinc-400 rounded-md text-xs font-bold hover:bg-red-100 transition-colors"
+      >
+        #{{ tag }} <i class="fa-solid fa-xmark opacity-50"></i>
+      </button>
+
+      <button @click="clearAll" class="text-xs text-blue-600 dark:text-blue-400 hover:underline ml-2">Clear All</button>
+    </div>
+
+    <!-- Grouped Post List -->
+    <div v-if="groupedPosts.length > 0" class="space-y-12">
+      <section v-for="group in groupedPosts" :key="group.year" class="animate-fade-in-up">
+        <h2 class="text-2xl font-bold text-zinc-300 dark:text-white/20 mb-6 border-l-4 border-blue-500/50 pl-4 select-none">
           {{ group.year }}
         </h2>
-        <div class="flex flex-col gap-1">
+
+        <div class="flex flex-col">
           <article v-for="post in group.items" :key="post.id"
-                   class="group flex flex-col sm:flex-row gap-4 p-4 rounded-xl hover:bg-white/50 dark:hover:bg-white/5 transition-all border border-transparent hover:border-zinc-200 dark:hover:border-white/10">
+                   class="flex flex-col sm:flex-row gap-2 sm:gap-6 py-4 border-b border-zinc-200/50 dark:border-white/5 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-white/2 transition-colors rounded-lg px-2"
+          >
             <time class="w-20 shrink-0 text-sm font-mono text-zinc-400 pt-1">
               {{ new Date(post.data.pubDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) }}
             </time>
-            <div class="grow">
-              <a :href="`/blog/${post.id}/`" class="text-lg font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+
+            <div class="grow min-w-0">
+              <a :href="`/blog/${post.id}/`" class="block text-lg font-bold text-zinc-800 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors mb-1">
                 {{ post.data.title }}
               </a>
-              <div class="flex gap-3 mt-1">
-                <span v-for="cat in post.data.categories" :key="cat" class="text-[10px] font-black text-blue-500/80 uppercase tracking-tighter">
-                  {{ cat }}
-                </span>
+
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                <div v-if="post.data.categories" class="flex gap-1.5">
+                  <span v-for="c in post.data.categories" :key="c"
+                        class="bg-blue-50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-900/30 font-medium"
+                  >
+                    {{ c }}
+                  </span>
+                </div>
+                <div v-if="post.data.tags" class="flex items-center gap-2 text-zinc-500 opacity-60">
+                  <i class="fa-solid fa-hashtag text-[10px]"></i>
+                  <span>{{ post.data.tags.join(', ') }}</span>
+                </div>
               </div>
             </div>
           </article>
@@ -114,14 +141,10 @@ const postsByYear = computed(() => {
       </section>
     </div>
 
-    <div v-else class="text-center py-20 text-zinc-500 bg-zinc-50/50 dark:bg-white/2 rounded-3xl border border-dashed border-zinc-200 dark:border-white/10">
-      <i class="fa-regular fa-folder-open text-4xl mb-4 opacity-20"></i>
-      <p>No matching articles found.</p>
+    <!-- Empty State -->
+    <div v-else class="py-20 text-center text-zinc-500">
+      <i class="fa-regular fa-folder-open text-4xl mb-4 opacity-30"></i>
+      <p>No results found matching selected filters.</p>
     </div>
   </div>
 </template>
-
-<style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-</style>
