@@ -7,48 +7,78 @@ interface Props {
 }
 
 const { project } = Astro.props;
+const isTall = project.size === 'tall';
 ---
 
 <a
         href={project.url}
         target="_blank"
         rel="noopener noreferrer"
-        class="group block no-underline h-full"
+        class:list={[
+            "group block no-underline h-full",
+            isTall ? "row-span-2" : "row-span-1"
+        ]}
 >
-    <Panel class="h-full p-6! flex items-start gap-5 transition-[border-color,background-color,shadow] duration-300 hover:border-blue-500/50 hover:bg-white/70 dark:hover:bg-black/50">
+    <Panel class:list={[
+        "h-full p-6! flex transition-[border-color,background-color,shadow] duration-300",
+        "hover:border-blue-500/50 hover:bg-white/70 dark:hover:bg-black/50",
+        // Adjust layout based on size: tall cards center content vertically
+        isTall ? "flex-col justify-center items-center text-center gap-6" : "flex-row items-start gap-5"
+    ]}>
 
         <!-- Logo -->
-        <div class="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center bg-zinc-100/50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 group-hover:border-blue-400/50 transition-colors">
+        <div class:list={[
+            "shrink-0 rounded-2xl flex items-center justify-center bg-zinc-100/50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 group-hover:border-blue-400/50 transition-colors",
+            isTall ? "w-20 h-20" : "w-14 h-14"
+        ]}>
             {project.logo.type === 'icon' && (
-                    <i class:list={[project.logo.value, "text-2xl text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors"]}></i>
+                    <i class:list={[
+                        project.logo.value,
+                        "text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors",
+                        isTall ? "text-4xl" : "text-2xl"
+                    ]}></i>
             )}
 
             {project.logo.type === 'text' && (
-                    <span class="text-xl font-bold text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors">
-          {project.logo.value}
-        </span>
+                    <span class:list={[
+                        "font-bold text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors",
+                        isTall ? "text-3xl" : "text-xl"
+                    ]}>
+                    {project.logo.value}
+                </span>
             )}
 
             {project.logo.type === 'image' && (
-                    <img src={project.logo.value} alt={project.title} class="w-full h-full object-cover" />
+                    <img src={project.logo.value} alt={project.title} class="w-full h-full object-cover rounded-2xl" />
             )}
         </div>
 
         <!-- Content -->
-        <div class="grow min-w-0">
-            <h3 class="text-lg font-bold text-zinc-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1 truncate">
+        <div class:list={[
+            "grow min-w-0",
+            isTall ? "w-full" : ""
+        ]}>
+            <h3 class:list={[
+                "font-bold text-zinc-800 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2",
+                isTall ? "text-xl" : "text-lg truncate"
+            ]}>
                 {project.title}
             </h3>
             {project.description && (
-                    <p class="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                    <p class:list={[
+                        "text-zinc-500 dark:text-zinc-400 leading-relaxed",
+                        isTall ? "text-base line-clamp-4" : "text-sm line-clamp-2"
+                    ]}>
                         {project.description}
                     </p>
             )}
         </div>
 
-        <!-- Arrow Indicator -->
-        <div class="shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <i class="fa-solid fa-chevron-right text-xs text-blue-500"></i>
-        </div>
+        <!-- Arrow Indicator (Only for small cards to keep tall cards clean) -->
+        {!isTall && (
+                <div class="shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="fa-solid fa-chevron-right text-xs text-blue-500"></i>
+                </div>
+        )}
     </Panel>
 </a>

@@ -9,6 +9,9 @@ export interface Project {
         type: 'icon' | 'image' | 'text';
         value: string;
     };
+    
+    // 'single' (1x1) or 'tall' (1x2)
+    size?: 'single' | 'tall';
 }
 
 // Website Settings
@@ -55,7 +58,8 @@ export const PROJECTS: Project[] = [
         logo: {
             type: 'icon',
             value: 'fa-solid fa-ice-cream'
-        }
+        },
+        size: 'tall'
     },
     {
         title: "Project Example",
@@ -64,6 +68,15 @@ export const PROJECTS: Project[] = [
         logo: {
             type: 'text',
             value: 'PT'
+        }
+    },
+    {
+        title: "Another Project",
+        description: "Standard size card for comparison.",
+        url: "#",
+        logo: {
+            type: 'icon',
+            value: 'fa-solid fa-code'
         }
     }
 ];

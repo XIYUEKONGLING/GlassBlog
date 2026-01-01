@@ -48,8 +48,10 @@ const hasProjects = PROJECTS && PROJECTS.length > 0;
 							</h2>
 							<div class="h-px w-full bg-zinc-200 dark:bg-white/10"></div>
 						</div>
+
+						<!-- Use grid-auto-flow-dense to allow smaller cards to fill gaps around tall cards -->
 						<div class:list={[
-							"grid gap-6",
+							"grid gap-6 grid-auto-flow-dense",
 							PROJECTS.length > 1 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
 						]}>
 							{PROJECTS.map((project) => (
