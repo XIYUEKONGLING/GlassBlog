@@ -6,9 +6,11 @@ import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import Panel from "../components/Panel.astro";
 import Sidebar from "../components/Sidebar.astro";
-import TableOfContents from "../components/TableOfContents.astro";
 import { Image } from 'astro:assets';
 import {SITE_LANGUAGE, SITE_TITLE} from "../consts.ts";
+
+import { TableOfContents } from '../components/react/TableOfContents';
+import { ImageLightbox } from '../components/react/ImageLightbox';
 
 type Props = CollectionEntry<'blog'>['data'] & {
 	headings?: { depth: number; slug: string; text: string }[];
@@ -35,7 +37,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 				<Sidebar hasToc={showToc}>
 					{showToc && (
 						<Panel class="p-5! max-h-[calc(100vh-10rem)] overflow-y-auto custom-scrollbar">
-							<TableOfContents headings={headings} />
+							<TableOfContents client:idle headings={headings} />
 						</Panel>
 					)}
 				</Sidebar>
@@ -108,30 +110,24 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 	</div>
 </div>
 
-<!-- Lightbox Container -->
-<div id="lightbox" style="display: none;">
-	<img id="lightbox-img" src="" alt="Enlarged view" />
-</div>
+<ImageLightbox client:idle />
 
 <Footer />
 
 <script>
 	document.addEventListener('astro:page-load', () => {
-
-		// 1. Copy Code Button
+		// Copy Code Button
 		const codeBlocks = document.querySelectorAll('pre');
 		codeBlocks.forEach((pre) => {
-			// Check if button already exists (client router navigation)
 			if (pre.querySelector('.copy-code-btn')) return;
 
-			// Make pre relative so button positions correctly
 			if (getComputedStyle(pre).position === 'static') {
 				pre.style.position = 'relative';
 			}
 
 			const button = document.createElement('button');
 			button.className = 'copy-code-btn';
-			button.innerHTML = '<i class="fa-regular fa-copy"></i>'; // Icon only initially
+			button.innerHTML = '<i class="fa-regular fa-copy"></i>';
 			button.setAttribute('aria-label', 'Copy code');
 
 			button.addEventListener('click', async () => {
@@ -140,7 +136,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 
 				try {
 					await navigator.clipboard.writeText(code);
-					button.innerHTML = '<i class="fa-solid fa-check"></i>'; // Check icon
+					button.innerHTML = '<i class="fa-solid fa-check"></i>';
 					button.classList.add('text-green-500');
 					setTimeout(() => {
 						button.innerHTML = '<i class="fa-regular fa-copy"></i>';
@@ -154,32 +150,6 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 
 			pre.appendChild(button);
 		});
-
-		// 2. Image Lightbox
-		const images = document.querySelectorAll('.prose img');
-		const lightbox = document.getElementById('lightbox');
-		const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
-
-		if (lightbox && lightboxImg) {
-			images.forEach((img) => {
-				img.addEventListener('click', () => {
-					lightboxImg.src = (img as HTMLImageElement).src;
-					lightbox.classList.add('active');
-				});
-			});
-
-			lightbox.addEventListener('click', (e) => {
-				if (e.target !== lightboxImg) {
-					lightbox.classList.remove('active');
-					// Wait for animation to finish
-					setTimeout(() => {
-						if(!lightbox.classList.contains('active')) {
-							lightboxImg.src = ''; // Clear src
-						}
-					}, 300);
-				}
-			});
-		}
 	});
 </script>
 </body>
