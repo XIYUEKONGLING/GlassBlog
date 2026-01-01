@@ -161,7 +161,7 @@ onUnmounted(() => {
 
 <template>
   <div
-      class="fixed top-0 right-0 w-4 h-screen z-[9999] p-1 flex flex-col gap-1 transition-opacity duration-300 pointer-events-auto"
+      class="fixed top-0 right-0 w-4 h-screen z-9999 p-1 flex flex-col gap-1 transition-opacity duration-300 pointer-events-auto"
       :class="isVisible || isDragging ? 'opacity-100' : 'opacity-0'"
       @mouseenter="isVisible = true"
   >
@@ -180,12 +180,12 @@ onUnmounted(() => {
 
     <div
         ref="trackRef"
-        class="relative flex-grow w-full rounded-lg bg-black/[0.02] dark:bg-white/[0.02] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+        class="relative grow w-full rounded-lg bg-black/2 dark:bg-white/2 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
         @mousedown.self="jumpTo"
     >
       <div
           class="absolute left-1/2 w-1.5 rounded-full bg-black/25 dark:bg-white/25 backdrop-blur-md transition-[width,background] duration-200 cursor-pointer hover:w-2.5 hover:bg-black/45 dark:hover:bg-white/45"
-          :class="{ '!w-2.5 !bg-black/60 dark:!bg-white/60': isDragging }"
+          :class="{ 'w-2.5! bg-black/60! dark:bg-white/60!': isDragging }"
           :style="thumbStyle"
           @mousedown.stop="startDrag"
           @touchstart.stop.prevent="startDrag"
