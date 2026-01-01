@@ -27,6 +27,26 @@ const allPosts = await getCollection('blog');
 <html lang={SITE_LANGUAGE}>
 <head>
 	<BaseHead title={"Blog - " + SITE_TITLE} description={SITE_DESCRIPTION} />
+	<style>
+		.post-item {
+			transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+			opacity: 1;
+			transform: translateY(0) scale(1);
+			max-height: 500px;
+			margin-bottom: 2rem; /* gap-8 (32px) */
+			overflow: hidden;
+		}
+
+		.post-item.hidden-item {
+			opacity: 0;
+			transform: translateY(10px) scale(0.98);
+			max-height: 0;
+			margin-bottom: 0;
+			padding-bottom: 0;
+			border-bottom-width: 0;
+			pointer-events: none;
+		}
+	</style>
 </head>
 <body class="flex flex-col min-h-screen">
 <Header />
@@ -37,7 +57,6 @@ const allPosts = await getCollection('blog');
 			<!-- Left Sidebar -->
 			<aside class="lg:w-1/4">
 				<Sidebar>
-					<!-- Optional: Insert Stats into the Sidebar Slot -->
 					<Panel class="p-5! flex flex-col gap-3 text-sm text-zinc-600 dark:text-zinc-400">
 						<div class="flex justify-between items-center">
 							<span>Total Posts</span>
@@ -54,7 +73,8 @@ const allPosts = await getCollection('blog');
 					<div class="mb-8 relative z-10">
 						<div class="relative group">
 							<i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-blue-500 transition-colors"></i>
-							<label for="search-input"></label><input
+							<label for="search-input"></label>
+							<input
 								type="text"
 								id="search-input"
 								placeholder="Filter articles on this page..."
@@ -63,7 +83,7 @@ const allPosts = await getCollection('blog');
 						</div>
 					</div>
 
-					<div class="flex flex-col gap-8" id="post-list">
+					<div class="flex flex-col" id="post-list">
 						{posts.map((post) => (
 							<article class="post-item flex flex-col md:flex-row gap-6 border-b border-zinc-200/50 dark:border-white/5 pb-8 last:border-0 last:pb-0">
 
@@ -85,12 +105,21 @@ const allPosts = await getCollection('blog');
                                             <i class="fa-regular fa-calendar-days text-xs opacity-70"></i>
                                             <FormattedDate date={post.data.pubDate} />
                                         </span>
+
 										{post.data.categories && post.data.categories.length > 0 && (
-											<div class="flex items-center gap-2">
+											<div class="flex items-center gap-2 flex-wrap">
 												<i class="fa-regular fa-folder text-xs opacity-70"></i>
-												<a href={`/archive#category-${post.data.categories[0]}`} class="text-blue-600 dark:text-blue-400 hover:underline">
-													{post.data.categories[0]}
-												</a>
+												{post.data.categories.map((cat, index) => (
+													<>
+														{index > 0 && <span class="text-zinc-300 dark:text-zinc-600">/</span>}
+														<a
+															href={`/archive?category=${encodeURIComponent(cat)}`}
+															class="text-blue-600 dark:text-blue-400 hover:underline"
+														>
+															{cat}
+														</a>
+													</>
+												))}
 											</div>
 										)}
 									</div>
@@ -107,6 +136,10 @@ const allPosts = await getCollection('blog');
 								</div>
 							</article>
 						))}
+
+						<div id="no-search-results" class="hidden text-center py-10 text-zinc-500">
+							<p>No articles found matching your search.</p>
+						</div>
 					</div>
 
 					<div class="mt-12 pt-6 border-t border-zinc-200 dark:border-white/10 flex justify-between items-center">
@@ -133,15 +166,32 @@ const allPosts = await getCollection('blog');
 	document.addEventListener('astro:page-load', () => {
 		const searchInput = document.getElementById('search-input') as HTMLInputElement;
 		const items = document.querySelectorAll('.post-item');
+		const noResultsMsg = document.getElementById('no-search-results');
+
 		if(searchInput) {
 			searchInput.addEventListener('input', (e) => {
-				const term = (e.target as HTMLInputElement).value.toLowerCase();
+				const term = (e.target as HTMLInputElement).value.toLowerCase().trim();
+				let visibleCount = 0;
+
 				items.forEach((item) => {
 					const el = item as HTMLElement;
 					const content = el.innerText.toLowerCase();
-					if (content.includes(term)) el.style.display = 'flex';
-					else el.style.display = 'none';
+
+					if (content.includes(term)) {
+						el.classList.remove('hidden-item');
+						visibleCount++;
+					} else {
+						el.classList.add('hidden-item');
+					}
 				});
+
+				if (noResultsMsg) {
+					if (visibleCount === 0 && items.length > 0) {
+						noResultsMsg.classList.remove('hidden');
+					} else {
+						noResultsMsg.classList.add('hidden');
+					}
+				}
 			});
 		}
 	});
