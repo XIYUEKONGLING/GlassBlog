@@ -8,20 +8,18 @@ interface Props {
 }
 
 const { hasToc = false } = Astro.props;
-
 const allPosts = await getCollection('blog');
 
 const categories = [...new Set(allPosts.flatMap((post) => post.data.categories || []))].sort();
 const tags = [...new Set(allPosts.flatMap((post) => post.data.tags || []))].sort();
 ---
 
-{hasToc ? (
-<div class="flex flex-col gap-6 h-full">
+<div class:list={["flex flex-col gap-6 h-full", !hasToc && "sticky top-28 h-fit"]}>
     <div class="shrink-0">
         <Profile />
     </div>
 
-    <div class="sticky top-32 flex flex-col gap-6 h-fit transition-all duration-300">
+    <div class:list={["flex flex-col gap-6 h-fit transition-all duration-300", hasToc && "sticky top-32"]}>
         <slot />
 
         {categories.length > 0 && (
@@ -43,7 +41,7 @@ const tags = [...new Set(allPosts.flatMap((post) => post.data.tags || []))].sort
                                         <span class="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                             {category}
                                         </span>
-                                            <span class="text-xs bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-zinc-500 dark:text-zinc-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-300">
+                                            <span class="filter-count text-xs bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-zinc-500 dark:text-zinc-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-300">
                                             {count}
                                         </span>
                                         </a>
@@ -75,60 +73,75 @@ const tags = [...new Set(allPosts.flatMap((post) => post.data.tags || []))].sort
         )}
     </div>
 </div>
-    ) : (
 
-<div class="sticky top-28 flex flex-col gap-6 h-fit">
-    <Profile />
-    <slot />
+<script>
+    /**
+     * Bridge script to handle Sidebar filter clicks and notify Vue Archive component
+     */
+    function initSidebarFilters(): void {
+        const updateActiveStyles = (): void => {
+            const params = new URLSearchParams(window.location.search);
+            const activeCats = params.getAll('category');
+            const activeTags = params.getAll('tag');
 
-    {categories.length > 0 && (
-            <Panel class="p-5! text-sm">
-                <h3 class="font-bold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2 uppercase tracking-wider text-xs opacity-80">
-                    <i class="fa-regular fa-folder"></i> Categories
-                </h3>
-                <ul class="flex flex-col gap-1.5">
-                    {categories.map(category => {
-                        const count = allPosts.filter(p => p.data.categories?.includes(category)).length;
-                        return (
-                                <li>
-                                    <a
-                                            href={`/archive?category=${encodeURIComponent(category)}`}
-                                            data-filter-type="category"
-                                            data-filter-value={category}
-                                            class="sidebar-filter-link group flex justify-between items-center px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-zinc-600 dark:text-zinc-300"
-                                    >
-                                    <span class="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                        {category}
-                                    </span>
-                                        <span class="text-xs bg-zinc-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-zinc-500 dark:text-zinc-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-300">
-                                        {count}
-                                    </span>
-                                    </a>
-                                </li>
-                        );
-                    })}
-                </ul>
-            </Panel>
-    )}
+            document.querySelectorAll('.sidebar-filter-link').forEach(link => {
+                const type = link.getAttribute('data-filter-type');
+                const val = link.getAttribute('data-filter-value');
+                const isActive = (type === 'category' && activeCats.includes(val || '')) ||
+                    (type === 'tag' && activeTags.includes(val || ''));
 
-    {tags.length > 0 && (
-            <Panel class="p-5! text-sm">
-                <h3 class="font-bold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2 uppercase tracking-wider text-xs opacity-80">
-                    <i class="fa-solid fa-tags"></i> Tags
-                </h3>
-                <div class="flex flex-wrap gap-2">
-                    {tags.map(tag => (
-                            <a
-                                    href={`/archive?tag=${encodeURIComponent(tag)}`}
-                                    data-filter-type="tag"
-                                    data-filter-value={tag}
-                                    class="sidebar-filter-link px-3 py-1.5 rounded-md bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-xs font-medium"
-                            >
-                                #{tag}
-                            </a>
-                    ))}
-                </div>
-            </Panel>
-    )}
-</div>
-    )}
+                if (isActive) {
+                    link.classList.add('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+                    link.classList.remove('text-zinc-600', 'dark:text-zinc-300', 'dark:text-zinc-400');
+                } else {
+                    link.classList.remove('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+                    link.classList.add('text-zinc-600', 'dark:text-zinc-300', 'dark:text-zinc-400');
+                }
+            });
+        };
+
+        const handleFilterClick = (e: MouseEvent): void => {
+            // Only intercept if we are on the archive page to allow SPA-like filtering
+            if (window.location.pathname !== '/archive') return;
+
+            const link = (e.currentTarget as HTMLAnchorElement);
+            const type = link.getAttribute('data-filter-type');
+            const val = link.getAttribute('data-filter-value');
+
+            if (!type || !val) return;
+
+            e.preventDefault();
+
+            const params = new URLSearchParams(window.location.search);
+            const currentValues = params.getAll(type);
+
+            if (currentValues.includes(val)) {
+                // Remove existing filter
+                const newValues = currentValues.filter(v => v !== val);
+                params.delete(type);
+                newValues.forEach(v => params.append(type, v));
+            } else {
+                // Add new filter
+                params.append(type, val);
+            }
+
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.pushState(null, '', newUrl);
+
+            // Notify Vue component via popstate
+            window.dispatchEvent(new Event('popstate'));
+            updateActiveStyles();
+        };
+
+        document.querySelectorAll('.sidebar-filter-link').forEach(link => {
+            link.addEventListener('click', handleFilterClick as EventListener);
+        });
+
+        // Initialize styles on load
+        updateActiveStyles();
+        window.addEventListener('popstate', updateActiveStyles);
+    }
+
+    // Support Astro View Transitions
+    document.addEventListener('astro:page-load', initSidebarFilters);
+</script>

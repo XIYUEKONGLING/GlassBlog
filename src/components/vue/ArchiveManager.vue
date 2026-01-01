@@ -11,13 +11,19 @@ const props = defineProps<Props>();
 const activeCategories = ref<string[]>([]);
 const activeTags = ref<string[]>([]);
 
-const syncFromURL = () => {
+/**
+ * Sync internal state with URL parameters
+ */
+const syncFromURL = (): void => {
   const params = new URLSearchParams(window.location.search);
   activeCategories.value = params.getAll('category');
   activeTags.value = params.getAll('tag');
 };
 
-const updateURL = () => {
+/**
+ * Update the browser URL without a full page reload
+ */
+const updateURL = (): void => {
   const params = new URLSearchParams();
   activeCategories.value.forEach(cat => params.append('category', cat));
   activeTags.value.forEach(tag => params.append('tag', tag));
@@ -25,9 +31,12 @@ const updateURL = () => {
   const query = params.toString() ? '?' + params.toString() : '';
   const newUrl = `${window.location.pathname}${query}`;
   window.history.pushState(null, '', newUrl);
+
+  // Dispatch event so other components (like Sidebar) can react if needed
+  window.dispatchEvent(new Event('popstate'));
 };
 
-const removeFilter = (type: 'category' | 'tag', value: string) => {
+const removeFilter = (type: 'category' | 'tag', value: string): void => {
   if (type === 'category') {
     activeCategories.value = activeCategories.value.filter(v => v !== value);
   } else {
@@ -36,7 +45,7 @@ const removeFilter = (type: 'category' | 'tag', value: string) => {
   updateURL();
 };
 
-const clearAll = () => {
+const clearAll = (): void => {
   activeCategories.value = [];
   activeTags.value = [];
   updateURL();
@@ -56,9 +65,11 @@ const filteredPosts = computed(() => {
     const postCats = post.data.categories || [];
     const postTags = post.data.tags || [];
 
+    // Check if post contains ALL selected categories (AND logic)
     const matchesCats = activeCategories.value.length === 0 ||
         activeCategories.value.every(cat => postCats.includes(cat));
 
+    // Check if post contains ALL selected tags (AND logic)
     const matchesTags = activeTags.value.length === 0 ||
         activeTags.value.every(tag => postTags.includes(tag));
 
@@ -80,8 +91,8 @@ const groupedPosts = computed(() => {
 </script>
 
 <template>
-  <div>
-    <!-- Active Filters Display -->
+  <div class="min-h-100">
+    <!-- Active Filter Badges -->
     <div v-if="activeCategories.length > 0 || activeTags.length > 0" class="mb-8 flex flex-wrap gap-2 items-center">
       <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest mr-2">Active Filters:</span>
 
@@ -102,7 +113,7 @@ const groupedPosts = computed(() => {
       <button @click="clearAll" class="text-xs text-blue-600 dark:text-blue-400 hover:underline ml-2">Clear All</button>
     </div>
 
-    <!-- Grouped Post List -->
+    <!-- Post List -->
     <div v-if="groupedPosts.length > 0" class="space-y-12">
       <section v-for="group in groupedPosts" :key="group.year" class="animate-fade-in-up">
         <h2 class="text-2xl font-bold text-zinc-300 dark:text-white/20 mb-6 border-l-4 border-blue-500/50 pl-4 select-none">
@@ -141,7 +152,6 @@ const groupedPosts = computed(() => {
       </section>
     </div>
 
-    <!-- Empty State -->
     <div v-else class="py-20 text-center text-zinc-500">
       <i class="fa-regular fa-folder-open text-4xl mb-4 opacity-30"></i>
       <p>No results found matching selected filters.</p>
