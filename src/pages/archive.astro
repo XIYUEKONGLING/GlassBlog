@@ -5,21 +5,12 @@ import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import Panel from "../components/Panel.astro";
 import Sidebar from "../components/Sidebar.astro";
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
-import {SITE_LANGUAGE} from "../consts.ts";
+import ArchiveManager from '../components/vue/ArchiveManager.vue';
+import { SITE_DESCRIPTION, SITE_TITLE, SITE_LANGUAGE } from '../consts';
 
 const posts = (await getCollection('blog')).sort(
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
-
-const postsByYear = posts.reduce((acc, post) => {
-    const year = post.data.pubDate.getFullYear();
-    if (!acc[year]) acc[year] = [];
-    acc[year].push(post);
-    return acc;
-}, {} as Record<number, typeof posts>);
-
-const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
 ---
 
 <!DOCTYPE HTML>
@@ -32,20 +23,8 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
 <div class="w-full px-4 mt-16 grow">
     <div class="mx-auto max-w-[95%] md:max-w-[80%]">
         <div class="flex flex-col-reverse lg:flex-row gap-8">
-
             <aside class="lg:w-1/4">
-                <Sidebar>
-                    <!-- Active Filters Display -->
-                    <Panel class="p-5! text-sm hidden" id="active-filter-panel">
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-bold text-zinc-900 dark:text-zinc-100">Active Filters</h3>
-                            <button id="reset-filter" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Clear All</button>
-                        </div>
-                        <div id="filter-tags-container" class="flex flex-wrap gap-2">
-                            <!-- JS will inject active tags here -->
-                        </div>
-                    </Panel>
-                </Sidebar>
+                <Sidebar />
             </aside>
 
             <main class="lg:w-3/4">
@@ -55,220 +34,15 @@ const years = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
                             <i class="fa-solid fa-box-archive text-zinc-400"></i>
                             Archive
                         </h1>
-                        <span id="post-count" class="text-zinc-500 text-sm">{posts.length} posts</span>
+                        <span class="text-zinc-500 text-sm">{posts.length} posts</span>
                     </div>
 
-                    <div id="archive-container" class="space-y-8">
-                        {years.map(year => (
-                                <div class="year-section animate-fade-in-up" data-year={year}>
-                                    <h2 class="text-2xl font-bold text-zinc-300 dark:text-white/20 mb-4 select-none border-l-4 border-blue-500/50 pl-4">
-                                        {year}
-                                    </h2>
-
-                                    <div class="flex flex-col">
-                                        {postsByYear[Number(year)].map((post) => (
-                                                <article
-                                                        class="archive-item flex flex-col sm:flex-row gap-2 sm:gap-6 py-4 border-b border-zinc-200/50 dark:border-white/5 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-white/2 transition-colors rounded-lg px-2"
-                                                        data-categories={post.data.categories?.join(',') || ''}
-                                                        data-tags={post.data.tags?.join(',') || ''}
-                                                >
-                                                    <div class="w-16 sm:w-20 shrink-0 text-sm text-zinc-400 dark:text-zinc-500 font-mono pt-1">
-                                                        {post.data.pubDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
-                                                    </div>
-
-                                                    <div class="grow min-w-0">
-                                                        <a href={`/blog/${post.id}/`} class="block text-lg font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">
-                                                            {post.data.title}
-                                                        </a>
-
-                                                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
-                                                            {post.data.categories && (
-                                                                    <div class="flex items-center gap-1.5">
-                                                                        {post.data.categories.map(c => (
-                                                                                <span class="bg-blue-50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-900/30">
-                                                                    {c}
-                                                                </span>
-                                                                        ))}
-                                                                    </div>
-                                                            )}
-
-                                                            {post.data.tags && (
-                                                                    <div class="flex items-center gap-2 opacity-60">
-                                                                        <i class="fa-solid fa-hashtag text-[10px]"></i>
-                                                                        <span>{post.data.tags.join(', ')}</span>
-                                                                    </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </article>
-                                        ))}
-                                    </div>
-                                </div>
-                        ))}
-                    </div>
-
-                    <div id="no-results" class="hidden py-20 text-center text-zinc-500">
-                        <i class="fa-regular fa-folder-open text-4xl mb-4 opacity-50"></i>
-                        <p>No posts found for these filters.</p>
-                    </div>
+                    <ArchiveManager client:load posts={posts} />
                 </Panel>
             </main>
         </div>
     </div>
 </div>
 <Footer />
-
-<script>
-    document.addEventListener('astro:page-load', () => {
-        if (!window.location.pathname.includes('/archive')) return;
-
-        const items = document.querySelectorAll('.archive-item');
-        const yearSections = document.querySelectorAll('.year-section');
-        const resetBtn = document.getElementById('reset-filter');
-        const activeFilterPanel = document.getElementById('active-filter-panel');
-        const filterTagsContainer = document.getElementById('filter-tags-container');
-        const noResults = document.getElementById('no-results');
-        const postCount = document.getElementById('post-count');
-
-        const getSidebarLinks = () => document.querySelectorAll('.sidebar-filter-link');
-
-        function updateUI() {
-            const params = new URLSearchParams(window.location.search);
-            const activeCategories = params.getAll('category');
-            const activeTags = params.getAll('tag');
-
-            let visibleCount = 0;
-
-            items.forEach(item => {
-                const el = item as HTMLElement;
-                const postCategories = el.dataset.categories?.split(',') || [];
-                const postTags = el.dataset.tags?.split(',') || [];
-
-                const matchesCategories = activeCategories.length === 0 || activeCategories.every(c => postCategories.includes(c));
-                const matchesTags = activeTags.length === 0 || activeTags.every(t => postTags.includes(t));
-
-                if (matchesCategories && matchesTags) {
-                    el.style.display = 'flex';
-                    visibleCount++;
-                } else {
-                    el.style.display = 'none';
-                }
-            });
-
-            yearSections.forEach(section => {
-                const el = section as HTMLElement;
-                const visibleItems = el.querySelectorAll('.archive-item[style="display: flex;"]');
-                const shouldShow = visibleItems.length > 0;
-
-                if (shouldShow) {
-                    if (el.style.display === 'none') {
-                        el.style.display = 'block';
-
-                        el.classList.remove('animate-fade-in-up');
-                        void el.offsetWidth; // Trigger reflow
-                        el.classList.add('animate-fade-in-up');
-                    }
-                } else {
-                    el.style.display = 'none';
-                }
-            });
-
-            if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
-            if (postCount) postCount.textContent = `${visibleCount} posts found`;
-
-            if (activeCategories.length > 0 || activeTags.length > 0) {
-                activeFilterPanel?.classList.remove('hidden');
-                if (filterTagsContainer) {
-                    filterTagsContainer.innerHTML = '';
-
-                    activeCategories.forEach(cat => {
-                        const badge = createBadge(cat, () => removeFilter('category', cat));
-                        filterTagsContainer.appendChild(badge);
-                    });
-
-                    activeTags.forEach(tag => {
-                        const badge = createBadge('#' + tag, () => removeFilter('tag', tag));
-                        filterTagsContainer.appendChild(badge);
-                    });
-                }
-            } else {
-                activeFilterPanel?.classList.add('hidden');
-            }
-
-            getSidebarLinks().forEach(link => {
-                const type = link.getAttribute('data-filter-type');
-                const val = link.getAttribute('data-filter-value');
-                const isActive = (type === 'category' && activeCategories.includes(val || '')) ||
-                    (type === 'tag' && activeTags.includes(val || ''));
-
-                if (isActive) {
-                    link.classList.add('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
-                    link.classList.remove('bg-zinc-100', 'dark:bg-white/5', 'text-zinc-600', 'dark:text-zinc-400');
-                } else {
-                    link.classList.remove('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
-                    link.classList.add('text-zinc-600', 'dark:text-zinc-400');
-                }
-            });
-        }
-
-        function createBadge(text: string, onClick: () => void) {
-            const btn = document.createElement('button');
-            btn.className = "flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-zinc-200 dark:bg-white/10 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors cursor-pointer";
-            btn.innerHTML = `<span>${text}</span><i class="fa-solid fa-xmark opacity-50"></i>`;
-            btn.onclick = onClick;
-            return btn;
-        }
-
-        function removeFilter(type: string, value: string) {
-            const params = new URLSearchParams(window.location.search);
-            const values = params.getAll(type).filter(v => v !== value);
-            params.delete(type);
-            values.forEach(v => params.append(type, v));
-            updateURL(params);
-        }
-
-        function toggleFilter(type: string, value: string) {
-            const params = new URLSearchParams(window.location.search);
-            const currentValues = params.getAll(type);
-
-            if (currentValues.includes(value)) {
-                const newValues = currentValues.filter(v => v !== value);
-                params.delete(type);
-                newValues.forEach(v => params.append(type, v));
-            } else {
-                params.append(type, value);
-            }
-            updateURL(params);
-        }
-
-        function updateURL(params: URLSearchParams) {
-            const newUrl = `${window.location.pathname}?${params.toString()}`;
-            history.pushState(null, '', newUrl);
-            updateUI();
-        }
-
-        getSidebarLinks().forEach(link => {
-            const newLink = link.cloneNode(true);
-            link.parentNode?.replaceChild(newLink, link);
-
-            newLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                const el = e.currentTarget as HTMLElement;
-                const type = el.getAttribute('data-filter-type');
-                const val = el.getAttribute('data-filter-value');
-                if (type && val) toggleFilter(type, val);
-            });
-        });
-
-        resetBtn?.addEventListener('click', () => {
-            history.pushState(null, '', window.location.pathname);
-            updateUI();
-        });
-
-        window.addEventListener('popstate', updateUI);
-
-        updateUI();
-    });
-</script>
 </body>
 </html>
