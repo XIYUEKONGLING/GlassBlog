@@ -49,11 +49,14 @@ const hasProjects = PROJECTS && PROJECTS.length > 0;
 							<div class="h-px w-full bg-zinc-200 dark:bg-white/10"></div>
 						</div>
 
-						<!-- grid-auto-flow-dense allows 1x1 cards to wrap around 1x2 cards -->
-						<div class:list={[
-							"grid gap-6 grid-auto-flow-dense",
-							PROJECTS.length > 1 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
-						]}>
+						<!-- 
+                          Grid Configuration:
+                          - Default: 1 column
+                          - md (768px): 2 columns (Standard Tablet/Laptop)
+                          - xl (1280px): 3 columns (Wide Desktop/PC Fullscreen)
+                          - grid-auto-flow-dense: Prevents whitespace when spans are mixed
+                        -->
+						<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 grid-auto-flow-dense">
 							{PROJECTS.map((project) => (
 								<ProjectCard client:load project={project} />
 							))}

@@ -12,6 +12,7 @@ export interface Project {
     
     // 'single' (1x1) or 'tall' (1x2)
     size?: 'single' | 'tall';
+    width?: 'single' | 'full'; // Horizontal spanning
 }
 
 // Website Settings
@@ -55,32 +56,29 @@ export const PROJECTS: Project[] = [
         title: "Glass Blog",
         description: [
             "A modern, minimalist blog theme.",
-            "Built with Astro 5 and Tailwind CSS 4.",
-            "Featuring sleek glassmorphism design."
+            "Built with Astro 5 and Tailwind CSS 4."
         ],
         url: "https://github.com/XIYUEKONGLING/GlassBlog",
-        logo: {
-            type: 'icon',
-            value: 'fa-solid fa-ice-cream'
-        },
+        logo: { type: 'icon', value: 'fa-solid fa-ice-cream' },
         size: 'tall'
     },
     {
         title: "Project Example",
-        description: "An example project showcasing the image logo type.",
+        description: "Standard horizontal card layout.",
         url: "#",
-        logo: {
-            type: 'text',
-            value: 'PT'
-        }
+        logo: { type: 'text', value: 'PE' }
     },
     {
-        title: "Another Project",
-        description: "Standard size card for comparison.",
+        title: "Documentation",
+        description: "Full guide on how to customize this theme.",
         url: "#",
-        logo: {
-            type: 'icon',
-            value: 'fa-solid fa-code'
-        }
+        logo: { type: 'icon', value: 'fa-solid fa-book' }
+    },
+    {
+        title: "Analytics Dashboard",
+        description: "Monitor your blog traffic in real-time.",
+        url: "#",
+        logo: { type: 'icon', value: 'fa-solid fa-chart-line' },
+        width: "full"
     }
 ];
