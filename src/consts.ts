@@ -17,14 +17,17 @@ export interface NavLink {
     href: string;
     label: string;
     icon?: string;
-    showIcon?: boolean;
+    showIcon?: boolean;       // Control for Desktop
+    showIconMobile?: boolean; // Control for Mobile
 }
 
+
+// Navbar Settings (Default)
 export const NAV_LINKS: NavLink[] = [
-    { href: '/', label: 'Home', icon: 'fa-solid fa-house', showIcon: false },
-    { href: '/blog', label: 'Blog', icon: 'fa-solid fa-pen-nib', showIcon: false },
-    { href: '/archive', label: 'Archive', icon: 'fa-solid fa-box-archive', showIcon: false },
-    { href: '/about', label: 'About', icon: 'fa-solid fa-user', showIcon: false },
+    { href: '/', label: 'Home', icon: 'fa-solid fa-house', showIcon: false, showIconMobile: true },
+    { href: '/blog', label: 'Blog', icon: 'fa-solid fa-newspaper', showIcon: false, showIconMobile: true },
+    { href: '/archive', label: 'Archive', icon: 'fa-solid fa-box-archive', showIcon: false, showIconMobile: true },
+    { href: '/about', label: 'About', icon: 'fa-solid fa-address-card', showIcon: false, showIconMobile: true },
 ];
 
 // Website Settings
