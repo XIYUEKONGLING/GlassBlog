@@ -49,14 +49,7 @@ const hasProjects = PROJECTS && PROJECTS.length > 0;
 							<div class="h-px w-full bg-zinc-200 dark:bg-white/10"></div>
 						</div>
 
-						<!-- 
-                          Grid Configuration:
-                          - Default: 1 column
-                          - md (768px): 2 columns (Standard Tablet/Laptop)
-                          - xl (1280px): 3 columns (Wide Desktop/PC Fullscreen)
-                          - grid-auto-flow-dense: Prevents whitespace when spans are mixed
-                        -->
-						<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 grid-auto-flow-dense">
+						<div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6 grid-auto-flow-dense auto-rows-[minmax(140px,auto)]">
 							{PROJECTS.map((project) => (
 								<ProjectCard client:load project={project} />
 							))}

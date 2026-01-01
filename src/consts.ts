@@ -9,11 +9,10 @@ export interface Project {
         type: 'icon' | 'image' | 'text';
         value: string;
     };
-    
-    // 'single' (1x1) or 'tall' (1x2)
-    size?: 'single' | 'tall';
-    width?: 'single' | 'full'; // Horizontal spanning
+    // 'normal' = 1x1, 'tall' = 1x2, 'wide' = 2x1, 'full' = 3x1 (on 2xl)
+    span?: 'normal' | 'tall' | 'wide' | 'full';
 }
+
 
 // Website Settings
 export const SITE_TITLE = "Glass Blog";
@@ -56,29 +55,30 @@ export const PROJECTS: Project[] = [
         title: "Glass Blog",
         description: [
             "A modern, minimalist blog theme.",
-            "Built with Astro 5 and Tailwind CSS 4."
+            "Built with Astro 5 and Tailwind CSS 4.",
+            "Featuring sleek glassmorphism design."
         ],
-        url: "https://github.com/XIYUEKONGLING/GlassBlog",
+        url: "#",
         logo: { type: 'icon', value: 'fa-solid fa-ice-cream' },
-        size: 'tall'
+        span: 'tall'
     },
     {
-        title: "Project Example",
-        description: "Standard horizontal card layout.",
+        title: "Quick Link",
+        description: "Small card next to tall one.",
         url: "#",
-        logo: { type: 'text', value: 'PE' }
+        logo: { type: 'text', value: 'QL' }
     },
     {
         title: "Documentation",
-        description: "Full guide on how to customize this theme.",
+        description: "Standard card.",
         url: "#",
         logo: { type: 'icon', value: 'fa-solid fa-book' }
     },
     {
-        title: "Analytics Dashboard",
-        description: "Monitor your blog traffic in real-time.",
+        title: "Featured Resource",
+        description: ["This is a wide project spanning two columns", "Perfect for highlights"],
         url: "#",
-        logo: { type: 'icon', value: 'fa-solid fa-chart-line' },
-        width: "full"
+        logo: { type: 'icon', value: 'fa-solid fa-star' },
+        span: 'wide'
     }
 ];
