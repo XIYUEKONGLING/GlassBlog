@@ -82,7 +82,7 @@ html.dark::after {
 	animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Markdown Customization for Glassmorphism */
+/* Markdown Customization */
 .prose {
 	max-width: 65ch;
 	margin-left: auto;
@@ -106,4 +106,35 @@ html.dark::after {
 }
 .dark .prose a:hover {
 	border-bottom-color: #60a5fa;
+}
+
+/* --- Custom Scrollbar for Panels (like TOC) --- */
+.custom-scrollbar {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+	width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	background-color: rgba(0, 0, 0, 0.1);
+	border-radius: 20px;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+	background-color: rgba(255, 255, 255, 0.2);
 }

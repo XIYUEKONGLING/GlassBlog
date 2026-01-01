@@ -31,7 +31,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 		<div class="flex flex-col-reverse lg:flex-row gap-8">
 
 			<!-- Left Sidebar: Profile + TOC -->
-			<aside class="lg:w-1/4">
+			<aside class="lg:w-1/4 min-w-0">
 				<Sidebar>
 					{showToc && (
 						<Panel class="p-5! max-h-[60vh] overflow-y-auto custom-scrollbar">
@@ -42,7 +42,7 @@ const showToc = headings.filter(h => h.depth >= 2 && h.depth <= 3).length > 0;
 			</aside>
 
 			<!-- Main Content -->
-			<article class="w-full lg:w-3/4">
+			<article class="w-full lg:w-3/4 min-w-0">
 				<Panel>
 					{/* Hero Image */}
 					<div class="w-full mb-8">
