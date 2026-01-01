@@ -5,7 +5,7 @@ import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE, PROJECTS } from '../consts';
 import Panel from "../components/Panel.astro";
 import Sidebar from "../components/Sidebar.astro";
-import ProjectCard from "../components/ProjectCard.astro";
+import ProjectCard from "../components/vue/ProjectCard.vue";
 import { getEntry, render } from 'astro:content';
 import { SITE_LANGUAGE } from "../consts.ts";
 
@@ -49,13 +49,13 @@ const hasProjects = PROJECTS && PROJECTS.length > 0;
 							<div class="h-px w-full bg-zinc-200 dark:bg-white/10"></div>
 						</div>
 
-						<!-- Use grid-auto-flow-dense to allow smaller cards to fill gaps around tall cards -->
+						<!-- grid-auto-flow-dense allows 1x1 cards to wrap around 1x2 cards -->
 						<div class:list={[
 							"grid gap-6 grid-auto-flow-dense",
 							PROJECTS.length > 1 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
 						]}>
 							{PROJECTS.map((project) => (
-								<ProjectCard project={project} />
+								<ProjectCard client:load project={project} />
 							))}
 						</div>
 					</section>

@@ -3,7 +3,7 @@
 
 export interface Project {
     title: string;
-    description?: string;
+    description?: string | string[];
     url: string;
     logo: {
         type: 'icon' | 'image' | 'text';
@@ -53,7 +53,11 @@ export const SOCIAL_LINKS: { icon: string; url: string; label: string }[] = [
 export const PROJECTS: Project[] = [
     {
         title: "Glass Blog",
-        description: "A modern, minimalist blog theme built with Astro 5 and Tailwind CSS 4.",
+        description: [
+            "A modern, minimalist blog theme.",
+            "Built with Astro 5 and Tailwind CSS 4.",
+            "Featuring sleek glassmorphism design."
+        ],
         url: "https://github.com/XIYUEKONGLING/GlassBlog",
         logo: {
             type: 'icon',
