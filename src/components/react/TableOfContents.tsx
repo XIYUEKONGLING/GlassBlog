@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { clsx } from 'clsx';
+import React, { useEffect, useState, useCallback } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 interface Heading {
@@ -17,6 +16,8 @@ export const TableOfContents: React.FC<Props> = ({ headings }) => {
 
     const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
 
+    const cleanText = (text: string) => text.replace(/#$/, '').trim();
+
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
@@ -26,7 +27,9 @@ export const TableOfContents: React.FC<Props> = ({ headings }) => {
                     }
                 });
             },
-            { rootMargin: '-100px 0px -66% 0px' }
+            {
+                rootMargin: '-100px 0px -80% 0px'
+            }
         );
 
         const elements = document.querySelectorAll('h2, h3');
@@ -35,13 +38,11 @@ export const TableOfContents: React.FC<Props> = ({ headings }) => {
         return () => observer.disconnect();
     }, []);
 
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, slug: string) => {
+    const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, slug: string) => {
         e.preventDefault();
-        setActiveId(slug);
-
         const element = document.getElementById(slug);
         if (element) {
-            const headerOffset = 80;
+            const headerOffset = 100;
             const elementPosition = element.getBoundingClientRect().top;
             const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -49,37 +50,42 @@ export const TableOfContents: React.FC<Props> = ({ headings }) => {
                 top: offsetPosition,
                 behavior: 'smooth'
             });
+
+            history.pushState(null, '', `#${slug}`);
         }
-    };
+    }, []);
 
     if (filteredHeadings.length === 0) return null;
 
     return (
-        <nav className="toc-container">
-            <h2 className="text-lg font-bold mb-4 text-zinc-900 dark:text-zinc-100 flex items-center gap-2 px-2">
-                <i className="fa-solid fa-list-ul text-sm opacity-70"></i>
+        <nav className="flex flex-col gap-4">
+            <div className="flex items-center gap-2 px-2 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-xs opacity-60">
+                <i className="fa-solid fa-list-ul text-[10px]"></i>
                 On this page
-            </h2>
+            </div>
 
-            <ul className="flex flex-col text-sm relative pl-2">
-                <div className="absolute left-2 top-2 bottom-2 w-px bg-zinc-200 dark:bg-white/10 z-0"></div>
-
+            <ul className="relative space-y-0.5 border-l border-zinc-200 dark:border-white/10 ml-2">
                 {filteredHeadings.map((heading) => {
                     const isActive = activeId === heading.slug;
                     return (
-                        <li key={heading.slug} className="relative z-10">
+                        <li key={heading.slug}>
                             <a
                                 href={`#${heading.slug}`}
                                 onClick={(e) => handleClick(e, heading.slug)}
                                 className={twMerge(
-                                    "block py-1.5 pr-2 transition-all duration-200 border-l-2 rounded-r-md cursor-pointer",
-                                    heading.depth === 3 ? "pl-6 text-xs" : "pl-4 font-medium",
+                                    "block py-2 pr-3 -ml-px border-l-2 transition-all duration-300 text-sm",
+                                    heading.depth === 3 ? "pl-6" : "pl-4",
                                     isActive
-                                        ? "border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/10"
-                                        : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700"
+                                        ? "border-blue-500 text-blue-600 dark:text-blue-400 font-medium bg-blue-50/50 dark:bg-blue-900/10"
+                                        : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100/50 dark:hover:bg-white/5"
                                 )}
                             >
-                                {heading.text}
+                <span className={twMerge(
+                    "transition-transform duration-300 inline-block",
+                    isActive ? "translate-x-1" : "translate-x-0"
+                )}>
+                    {cleanText(heading.text)}
+                </span>
                             </a>
                         </li>
                     );
