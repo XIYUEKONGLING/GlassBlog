@@ -13,7 +13,7 @@ import {
 } from "../consts.ts";
 
 import type { HTMLAttributes } from 'astro/types';
-import Image from "astro/components/Image.astro";
+import { Image } from 'astro:assets';
 interface Props extends HTMLAttributes<'div'> {}
 const { class: className, ...props } = Astro.props;
 ---
