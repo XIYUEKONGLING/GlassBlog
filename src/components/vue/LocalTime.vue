@@ -17,23 +17,24 @@ const updateTime = () => {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
-      timeZoneName: 'longOffset'
+      timeZoneName: 'shortOffset'
     });
 
     const parts = formatter.formatToParts(now);
     const hour = parts.find(p => p.type === 'hour')?.value;
     const minute = parts.find(p => p.type === 'minute')?.value;
-    const tzName = parts.find(p => p.type === 'timeZoneName')?.value;
+    let tzName = parts.find(p => p.type === 'timeZoneName')?.value || '';
 
-    if (hour && minute && tzName) {
+    if (hour && minute) {
       currentTime.value = `${hour}:${minute}`;
-      utcOffset.value = tzName.replace('GMT', 'UTC');
+      // 统一处理 GMT/UTC 转换，Firefox 有时会输出 GMT+8
+      utcOffset.value = tzName.replace(/GMT|UTC/gi, 'UTC');
     }
   } catch (e) {
-    console.error("Failed to update time:", e);
     currentTime.value = "Error";
   }
 };
+
 
 let timer: number;
 
